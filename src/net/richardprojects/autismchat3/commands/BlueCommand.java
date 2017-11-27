@@ -21,7 +21,8 @@ public class BlueCommand implements CommandExecutor {
 	
 	public boolean onCommand(CommandSender sender, Command arg1, String arg2,
 			String[] args) {
-		if(sender instanceof Player) {
+		
+		/*if(sender instanceof Player) {
 			final Player player = (Player) sender;
 			if(player.hasPermission("autismchat.admin.blue")) {
 				if(args.length == 0)
@@ -57,7 +58,7 @@ public class BlueCommand implements CommandExecutor {
 			}
 		} else {
 			sender.sendMessage("Only a player can execute this command.");
-		}		
+		}*/		
 		return true;
 	}
 }

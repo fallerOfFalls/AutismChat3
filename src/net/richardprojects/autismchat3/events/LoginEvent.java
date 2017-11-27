@@ -50,24 +50,16 @@ public class LoginEvent implements Listener {
 		if (plugin.getACPlayer(player.getUniqueId()) == null) {
 			playerJoinedBefore = false;
 			
-			// handle party creation
-			if (Config.templatePartyID == 0) {
-				// create new party
-				int partyID = plugin.createNewParty(uuid);				
-				if (partyID > -1) plugin.createNewPlayer(uuid, partyID);
-			} else {
-				if (plugin.getACParty(Config.templatePartyID) != null) {
-					plugin.createNewPlayer(uuid, Config.templatePartyID);
-					plugin.joinParty(Config.templatePartyID, player.getUniqueId());
-				} else {
-					int partyID = plugin.createNewParty(player.getUniqueId());					
-					if (partyID > -1) plugin.createNewPlayer(uuid, partyID);
-				}
-			}
+			// create new party
+			int partyID = plugin.createNewParty(uuid, Config.templateDefaultColor);				
+			if (partyID > -1) plugin.createNewPlayer(uuid, partyID);
 		}
 
 		ACPlayer acPlayer = plugin.getACPlayer(uuid);
-		Color pColor = acPlayer.getColor();
+		ACParty acParty = plugin.getACParty(acPlayer.getPartyId());
+		if (acParty == null) return;
+		
+		Color pColor = acParty.getColor();
 		if (pColor == Color.RED) {
 			AutismChat3.redTeam.addPlayer(player);
 		} else if (pColor == Color.BLUE) {

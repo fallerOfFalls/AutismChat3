@@ -101,7 +101,7 @@ public class AutismChat3 extends JavaPlugin {
 	}
 	
 	public void onDisable() {
-		log.info("[AutismChat3] Saving data to disk...");
+		log.info("[AutismChat4] Saving data to disk...");
 		saveDataTask.cancel();
 		saveDataTask = new SaveDataTask(this, true);
 		saveDataTask.run();
@@ -156,7 +156,7 @@ public class AutismChat3 extends JavaPlugin {
 					int partyId = playerConfig.getInt("partyId");
 					List<UUID> yellowList = Utils.convertStringToList((String) playerConfig.get("yellowList"));
 					boolean globalChat = playerConfig.getBoolean("globalChat");
-					Color color = Color.parseString(playerConfig.getString("color"));
+					Color defaultColor = Color.parseString(playerConfig.getString("defaultColor"));
 					boolean displayMotd = playerConfig.getBoolean("displayMotd");
 					
 					// uuid
@@ -164,13 +164,13 @@ public class AutismChat3 extends JavaPlugin {
 					strUUID = strUUID.replace(".yml", "");
 					UUID uuid = UUID.fromString(strUUID);
 					
-					ACPlayer p = new ACPlayer(uuid, partyId, color, globalChat, 
+					ACPlayer p = new ACPlayer(uuid, partyId, defaultColor, globalChat, 
 							(ArrayList<UUID>) yellowList, displayMotd);
 					players.put(uuid, p);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-				log.info("[AutismChat3] There was a problem reading " + playerFile.getName() + ". Skipping...");
+				log.info("[AutismChat4] There was a problem reading " + playerFile.getName() + ". Skipping...");
 			}
 		}
 	}
@@ -188,13 +188,14 @@ public class AutismChat3 extends JavaPlugin {
 					
 					int partyId = Integer.parseInt(partyFile.getName().replaceAll(".yml", ""));
 					List<UUID> memberList = Utils.convertStringToList((String) partyConfig.get("members"));
-										
-					ACParty p = new ACParty(memberList, partyId);
+					Color color = Color.parseString(partyConfig.getString("color"));
+					
+					ACParty p = new ACParty(memberList, partyId, color);
 					parties.put(partyId, p);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-				log.info("[AutismChat3] There was a problem reading " + partyFile.getName() + ". Skipping...");
+				log.info("[AutismChat4] There was a problem reading " + partyFile.getName() + ". Skipping...");
 			}
 		}
 	}
@@ -318,6 +319,9 @@ public class AutismChat3 extends JavaPlugin {
 		if (parties.containsKey(id)) {
 			return parties.get(id);
 		} else {
+			// TODO: Switch these
+			System.out.println("Could not find the party id: " + id);
+			//AutismChat3.log.severe("Could not find the party id: " + id);
 			return null;
 		}
 	}
@@ -328,8 +332,8 @@ public class AutismChat3 extends JavaPlugin {
 	 * @param firstMember the party's first member's uuid
 	 * @return the new party's id
 	 */
-	public int createNewParty(UUID firstMember) {
-		ACParty acParty = new ACParty(firstMember, this);
+	public int createNewParty(UUID firstMember, Color color) {
+		ACParty acParty = new ACParty(firstMember, color, this);
 		parties.put(acParty.getId(), acParty);
 		return acParty.getId();
 	}
@@ -384,7 +388,9 @@ public class AutismChat3 extends JavaPlugin {
 		// have player leave their current party
 		int currentPartyId = acPlayer.getPartyId();	
 		ACParty oldParty = getACParty(currentPartyId);
+		Color oldColor = null;
 		if (oldParty != null) {
+			oldColor = oldParty.getColor();
 			
 			// notify everyone in the party that the player left
 			for (UUID playerId : oldParty.getMembers()) {
@@ -419,7 +425,9 @@ public class AutismChat3 extends JavaPlugin {
 		// add member to the specified party
 		ACParty newParty = getACParty(partyId);
 		if (newParty != null) {
+			// put the player in the party
 			newParty.addMember(player);
+			acPlayer.setPartyId(partyId);	
 			
 			for (UUID member : newParty.getMembers()) {
 				Player cPlayer = getServer().getPlayer(member);
@@ -445,10 +453,32 @@ public class AutismChat3 extends JavaPlugin {
 			}
 		} else {
 			return false;
-		}
+		}	
 		
-		// update the player's partyId
-		acPlayer.setPartyId(partyId);		
+		// update the player's color to the party color
+		if (oldColor != null && newParty.getColor() != oldColor) {
+			// notify player
+			Color newColor = newParty.getColor();
+			String msg = "";
+			if (newColor == Color.GREEN) {
+				msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setGreen);
+			} else if (newColor == Color.WHITE) {
+				msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setWhite);
+			} else if (newColor == Color.YELLOW) {
+				msg = Messages.prefix_Good + Messages.message_setYellow;
+				msg = msg.replace("{yellow_list}", Utils.playersString(this, acPlayer.getYellowList(), player));
+				msg = Utils.colorCodes(msg);
+			} else if (newColor == Color.RED) {
+				msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setRed);
+			} else if (newColor == Color.BLUE) {
+				msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setBlue);
+			}
+			if (getServer().getPlayer(player) != null) {
+				getServer().getPlayer(player).sendMessage(msg);
+			}
+			
+			Utils.updateTeam(this, player, newColor); // update teams			
+		}
 		
 		return true;
 	}

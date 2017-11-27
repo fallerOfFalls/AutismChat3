@@ -8,7 +8,7 @@
 # If partyID is blank in the template, then a new partyID is generated for each new player.
 templateForFirstLogin:
   partyID: 0
-  color: WHITE
+  defaultColor: WHITE
   globalChat: true
   displayMotd: true
 #

@@ -54,35 +54,8 @@ public class RedCommand implements CommandExecutor {
 			final ACPlayer acPlayer = plugin.getACPlayer(player.getUniqueId());
 			
 			if (args.length == 0) {
-				acPlayer.setColor(Color.RED);
-				
-				// send message
-				String msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setRed);
-				player.sendMessage(msg);
-				
-				// update teams
-				Team playerTeam = AutismChat3.board.getPlayerTeam(player);
-				if(playerTeam != null) {
-					String name = playerTeam.getName();
-					if(name.equals("greenTeam")) {
-						AutismChat3.greenTeam.removePlayer(player);
-					} else if(name.equals("yellowTeam")) {
-						AutismChat3.yellowTeam.removePlayer(player);
-					} else if(name.equals("redTeam")) {
-						AutismChat3.redTeam.removePlayer(player);
-					} else if(name.equals("blueTeam")) {
-						AutismChat3.blueTeam.removePlayer(player);
-					}
-				}
-				AutismChat3.redTeam.addPlayer(player);
-				
-				// update scoreboards
-				for(Player cPlayer : plugin.getServer().getOnlinePlayers()) {
-					cPlayer.setScoreboard(AutismChat3.board);
-				}
-				
-				new SwitchRedTask(player.getUniqueId()).runTaskAsynchronously(plugin);
-					
+				Utils.updateTeam(plugin, player.getUniqueId(), Color.RED); // update team
+				new SwitchRedTask(player.getUniqueId()).runTaskAsynchronously(plugin);	
 			} else {
 				String msg = Utils.colorCodes(Messages.prefix_Bad + Messages.error_invalidArgs);
 				player.sendMessage(msg);
@@ -130,9 +103,9 @@ public class RedCommand implements CommandExecutor {
 								msg = msg.replace("{PLAYERS} {REASON}", Messages.reasonLeaveRed);
 							} else {
 								String list = Utils.partyMembersString(plugin, cPartyId, player);						
-								String msg2 = Messages.message_youLeaveParty;
-								msg2 = msg2.replace("{PLAYERS}", list);
-								msg2 = msg2.replace("{REASON}", Messages.reasonYouRed);
+								msg = Messages.message_youLeaveParty;
+								msg = msg.replace("{PLAYERS}", list);
+								msg = msg.replace("{REASON}", Messages.reasonYouRed);
 							}
 							
 							cPlayer.sendMessage(Utils.colorCodes(msg));
@@ -142,11 +115,17 @@ public class RedCommand implements CommandExecutor {
 					party.removeMember(player); // remove player from old party
 					
 					// create a new party for the player
-					int newPartyId = plugin.createNewParty(player);					
+					int newPartyId = plugin.createNewParty(player, Color.RED);					
 					acPlayer.setPartyId(newPartyId);
 				} catch(Exception e) {
 					e.printStackTrace();
 				}
+			}
+			
+			// send message last so it is after the message about leaving the party.
+			if (plugin.getServer().getPlayer(player) != null) {
+				String msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setRed);
+				plugin.getServer().getPlayer(player).sendMessage(msg);
 			}
 		}
 		

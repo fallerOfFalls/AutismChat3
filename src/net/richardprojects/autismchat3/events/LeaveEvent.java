@@ -1,5 +1,6 @@
 package net.richardprojects.autismchat3.events;
 
+import net.richardprojects.autismchat3.ACPlayer;
 import net.richardprojects.autismchat3.AutismChat3;
 import net.richardprojects.autismchat3.Color;
 import net.richardprojects.autismchat3.Config;
@@ -25,8 +26,11 @@ public class LeaveEvent implements Listener {
 			e.setQuitMessage("");
 			
 			for(Player p : plugin.getServer().getOnlinePlayers()) {
-				if(plugin.getACPlayer(p.getUniqueId()).getColor() != Color.RED) {
-					p.sendMessage(msg);
+				ACPlayer acPlayer = plugin.getACPlayer(p.getUniqueId());
+				if (acPlayer != null && plugin.getACParty(acPlayer.getPartyId()) != null) {
+					if (plugin.getACParty(acPlayer.getPartyId()).getColor() != Color.RED) {
+						p.sendMessage(msg);
+					}
 				}
 			}
 		}		

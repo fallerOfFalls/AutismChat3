@@ -43,7 +43,7 @@ public class Messages {
 	public static String error_noMessage;
 	public static String error_JoinParty1;
 	public static String error_JoinParty2;
-	public static String error_JoinParty3;
+	//public static String error_JoinParty3;
 	public static String error_JoinParty4;
 	public static String error_JoinParty5;
 	public static String error_JoinParty6;
@@ -152,7 +152,7 @@ public class Messages {
 			
 			error_JoinParty1 = messagesConfig.getString("partyJoinErrorMessages.1");
 			error_JoinParty2 = messagesConfig.getString("partyJoinErrorMessages.2");
-			error_JoinParty3 = messagesConfig.getString("partyJoinErrorMessages.3");
+			//error_JoinParty3 = messagesConfig.getString("partyJoinErrorMessages.3");
 			error_JoinParty4 = messagesConfig.getString("partyJoinErrorMessages.4");
 			error_JoinParty5 = messagesConfig.getString("partyJoinErrorMessages.5");
 			error_JoinParty6 = messagesConfig.getString("partyJoinErrorMessages.6");

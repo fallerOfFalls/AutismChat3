@@ -1,6 +1,7 @@
 package net.richardprojects.autismchat3.commands;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,13 +51,14 @@ private AutismChat3 plugin;
 		ACPlayer acPlayer = plugin.getACPlayer(player.getUniqueId());
 		ACPlayer acTarget = plugin.getACPlayer(newUUID);
 		int partyId = acTarget.getPartyId();
-		boolean joinParty = true;
+		ACParty requestedParty;
 		
 		// make sure the player's name exists
 		if (newUUID == null) {
 			String msg = Messages.prefix_Bad + Messages.error_notValidPlayer;
 			msg = msg.replace("{TARGET}", args[0]);
 			player.sendMessage(Utils.colorCodes(msg));
+			return;
 		}
 		
 		// make sure they are in a party
@@ -65,124 +67,71 @@ private AutismChat3 plugin;
 			player.sendMessage(Utils.colorCodes(msg));
 			return;
 		}
-				
+		requestedParty = plugin.getACParty(partyId);
 		List<UUID> partyMembers = plugin.getACParty(partyId).getMembers();
 		
-		// check if the player is red - (Check 1)
-		if(acTarget.getColor() == Color.RED) {
-			joinParty = false;
-			String msg = Messages.prefix_Bad + Messages.error_JoinParty1;
-			String pName = Color.colorCode(Color.RED) + plugin.getName(newUUID);
-			msg = msg.replace("{PLAYER}", pName);
-			player.sendMessage(Utils.colorCodes(msg));
-			return;
-		}
-		
-		// check 6
+		// check 6 - prevent player from partying with them self
 		if(newUUID.equals(player.getUniqueId())) {
-			joinParty = false;
 			String msg = Messages.prefix_Bad + Messages.error_JoinParty6;
 			player.sendMessage(Utils.colorCodes(msg));
 			return;
 		}
 		
-		// check 2
-		String partyMemberString = Utils.partyMembersString(plugin, partyId, player.getUniqueId());
-		boolean joinPartyAltered = false;
-		joinParty = false;
-		for (UUID uuid : partyMembers) {
-			if (!uuid.equals(player.getUniqueId())) {
-				ACPlayer acUUID = plugin.getACPlayer(uuid);
-				if (acUUID.getColor() == Color.YELLOW) {
-					List<UUID> uuids = acUUID.getYellowList();
-					if (uuids.contains(player.getUniqueId())) {
-						if (joinPartyAltered && !joinParty) {
-							joinParty = false;
-						} else if (joinPartyAltered && joinParty) {
-							joinParty = true;
-						} else if (!joinPartyAltered) {
-							joinParty = true;
-						}
-						joinPartyAltered = true;
-					}
-				} else {
-					if (joinPartyAltered && !joinParty) {
-						joinParty = false;
-					} else if (joinPartyAltered && joinParty) {
-						joinParty = true;
-					} else if (!joinPartyAltered) {
-						joinParty = true;
-					}
-					joinPartyAltered = true;
-				}
-			} else {
-				if (joinPartyAltered && !joinParty) {
-					joinParty = false;
-				} else if (joinPartyAltered && joinParty) {
-					joinParty = true;
-				} else if (!joinPartyAltered) {
-					joinParty = true;
-				}
-				joinPartyAltered = true;
-			}
-		}
-		if (!joinParty) {
-			String msg = Messages.prefix_Bad + Messages.error_JoinParty2;
-			msg = msg.replace("{MEMBERS}", partyMemberString);
+		// check 5 - prevent a player from partying with a player they are already in a party with
+		if (acPlayer.getPartyId() == requestedParty.getId()) {
+			String pName = Utils.formatName(plugin, newUUID, player.getUniqueId());
+			String msg = Messages.prefix_Bad + Messages.error_JoinParty5;
+			msg = msg.replace("{PLAYER}", pName);
 			player.sendMessage(Utils.colorCodes(msg));
 			return;
 		}
 		
-		// check 3
-		if(acPlayer.getColor() == Color.RED) {
+		// check 2 - if party is yellow make player is on party members' yellow lists.
+		if (requestedParty.getColor() == Color.YELLOW) {
+			String partyMemberString = Utils.partyMembersString(plugin, partyId, player.getUniqueId());
+			List<UUID> playersNotOnYellowList = new ArrayList<>();
+			
+			for (UUID cUUID : requestedParty.getMembers()) {
+				ACPlayer acUUID = plugin.getACPlayer(cUUID);
+				if (acUUID != null) {
+					if (!acUUID.getYellowList().contains(player.getUniqueId())) {
+						playersNotOnYellowList.add(cUUID);
+					}
+				}
+			}
+			
+			if (playersNotOnYellowList.size() > 0) {
+				String msg = Messages.prefix_Bad + Messages.error_JoinParty2;
+				msg = msg.replace("{MEMBERS}", partyMemberString);
+				msg = msg.replace("{NOT_ON_LIST}", Utils.playersString(plugin, playersNotOnYellowList, player.getUniqueId()));
+				player.sendMessage(Utils.colorCodes(msg));
+				return;
+			}			
+		}
+				
+		// check 3 - removed since players no longer have colors
+		/*if(requestedParty.getColor() == Color.RED) {
 			String msg = Messages.prefix_Bad + Messages.error_JoinParty3;
 			player.sendMessage(Utils.colorCodes(msg));
 			return;
-		}
+		}*/
 		
-		// check 4
-		if(acPlayer.getColor() == Color.YELLOW) {
-			List<UUID> yellowListMembers = acPlayer.getYellowList();
-			joinParty = false;
+		// check 4 - if party is yellow make players are on the player who is joining's yellow list.
+		if(requestedParty.getColor() == Color.YELLOW) {
+			String partyMemberString = Utils.partyMembersString(plugin, partyId, player.getUniqueId());
+			List<UUID> playersNotOnYellowList = new ArrayList<>();
 			
-			// 0 - hasn't been determined
-			// 1 - They can join
-			// 2 - They can't join
-			int canJoinParty = 0;
-			for(UUID uuid : partyMembers) {
-				if (!uuid.equals(player.getUniqueId())) {
-					if(yellowListMembers.contains(uuid)) {
-						if(canJoinParty == 0 || canJoinParty == 1) canJoinParty = 1;
-					} else {
-						if(canJoinParty == 0 || canJoinParty == 1) canJoinParty = 2;
-					}
+			// find any players in party who are not on player's yellow list
+			for (UUID cUUID : requestedParty.getMembers()) {
+				if (!acPlayer.getYellowList().contains(cUUID)) {
+					playersNotOnYellowList.add(cUUID);
 				}
 			}
 			
-			// set joinParty variable from canJoinParty
-			if(canJoinParty == 1) joinParty = true;
-			if(canJoinParty == 2) joinParty = false;
-			
-			if(!joinParty) {
-				String partyList = Utils.partyMembersString(plugin, partyId, player.getUniqueId());
+			if (playersNotOnYellowList.size() > 0) {
 				String msg = Messages.prefix_Bad + Messages.error_JoinParty4;
-				msg = msg.replace("{MEMBERS}", partyList);
-				player.sendMessage(Utils.colorCodes(msg));
-				return;
-			}
-		}
-		
-		// check 5
-		int currentPartyId = acPlayer.getPartyId();
-		if (plugin.getACParty(currentPartyId) != null) {
-			List<UUID> cPartyMembers = plugin.getACParty(currentPartyId).getMembers();
-			for(UUID uuid : cPartyMembers) {
-				if(uuid.equals(newUUID)) joinParty = false;
-			}
-			if (!joinParty) {
-				String pName = Utils.formatName(plugin, newUUID, player.getUniqueId());
-				String msg = Messages.prefix_Bad + Messages.error_JoinParty5;
-				msg = msg.replace("{PLAYER}", pName);
+				msg = msg.replace("{MEMBERS}", partyMemberString);
+				msg = msg.replace("{NOT_ON_LIST}", Utils.playersString(plugin, playersNotOnYellowList, player.getUniqueId()));
 				player.sendMessage(Utils.colorCodes(msg));
 				return;
 			}

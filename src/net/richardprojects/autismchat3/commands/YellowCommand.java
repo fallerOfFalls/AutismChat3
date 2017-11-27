@@ -43,35 +43,7 @@ public class YellowCommand implements CommandExecutor {
 			final ACPlayer acPlayer = plugin.getACPlayer(player.getUniqueId());
 			
 			if (args.length == 0) {
-				acPlayer.setColor(Color.YELLOW);
-				
-				// notify the player of the change
-				String yellowList = Utils.UUIDListToFormattedString(plugin, acPlayer.getYellowList());
-				String msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setYellow);
-				msg = msg.replace("{yellow_list}", yellowList);			
-				player.sendMessage(msg);
-				
-				// update the player teams
-				Team playerTeam = AutismChat3.board.getPlayerTeam(player);
-				if(playerTeam != null) {
-					String name = playerTeam.getName();
-					if(name.equals("greenTeam")) {
-						AutismChat3.greenTeam.removePlayer(player);
-					} else if(name.equals("yellowTeam")) {
-						AutismChat3.yellowTeam.removePlayer(player);
-					} else if(name.equals("redTeam")) {
-						AutismChat3.redTeam.removePlayer(player);
-					} else if(name.equals("blueTeam")) {
-						AutismChat3.blueTeam.removePlayer(player);
-					}
-				}
-				AutismChat3.yellowTeam.addPlayer(player);
-				for(Player cPlayer : plugin.getServer().getOnlinePlayers()) {
-					cPlayer.setScoreboard(AutismChat3.board);
-				}
-				
-				new SwitchYellowTask(player.getUniqueId()).runTaskAsynchronously(plugin);
-				
+				new SwitchYellowTask(player.getUniqueId(), player).runTaskAsynchronously(plugin);
 				return true;
 			} else {
 				if (args.length == 1) {
@@ -149,7 +121,7 @@ public class YellowCommand implements CommandExecutor {
 									player.sendMessage(Utils.colorCodes(notification));
 									
 									// check if the player is set to yellow and they are currently in a party with the person they just removed
-									if (acPlayer.getColor() == Color.YELLOW) {
+									if (plugin.getACParty(acPlayer.getPartyId()).getColor() == Color.YELLOW) {
 										int partyId = acPlayer.getPartyId();
 										ACParty party = plugin.getACParty(partyId);
 																				
@@ -161,7 +133,7 @@ public class YellowCommand implements CommandExecutor {
 													party.removeMember(player.getUniqueId());
 													
 													// create a new party and update the player's party id
-													int newPartyId = plugin.createNewParty(player.getUniqueId());
+													int newPartyId = plugin.createNewParty(player.getUniqueId(), Color.YELLOW);
 													plugin.getACPlayer(player.getUniqueId()).setPartyId(newPartyId);
 													
 													// notify old party members that they have left the party
@@ -243,16 +215,25 @@ public class YellowCommand implements CommandExecutor {
 	
 	private class SwitchYellowTask extends BukkitRunnable {
 		
-		private UUID player;
+		private Player player;
+		private UUID uuid;		
 		
-		public SwitchYellowTask(UUID player) {
+		public SwitchYellowTask(UUID uuid, Player player) {
+			this.uuid = uuid;
 			this.player = player;
 		}
 		
 		public void run() {
-			ACPlayer acPlayer = plugin.getACPlayer(player);
+			ACPlayer acPlayer = plugin.getACPlayer(uuid);
 			int currentPartyId = acPlayer.getPartyId();
-			ACParty party = plugin.getACParty(currentPartyId);
+			ACParty party;
+			// make sure player and party exist
+			if (acPlayer == null || plugin.getACParty(acPlayer.getPartyId()) == null) {
+				String msg = Utils.colorCodes(Messages.prefix_Bad + "You are not a member of a party.");
+				player.sendMessage(msg);
+				return;
+			}
+			party = plugin.getACParty(currentPartyId);
 			boolean stayInParty = true;			
 			
 			// check if there are people in the party who are not yellow
@@ -278,30 +259,51 @@ public class YellowCommand implements CommandExecutor {
 						if (cPlayer != null) {
 							String msg = "";
 							
-							if (!member.equals(player)) {
+							if (!member.equals(uuid)) {
 								msg = Messages.message_leaveParty;
-								String name = Utils.formatName(plugin, player, cPlayer.getUniqueId());
+								String name = Utils.formatName(plugin, player.getUniqueId(), cPlayer.getUniqueId());
 								msg = msg.replace("{PLAYER}", name);
 								msg = msg.replace("{PLAYERS} {REASON}", Messages.reasonLeaveYellow);
 							} else {
-								String list = Utils.partyMembersString(plugin, currentPartyId, player);								
-								String msg2 = Messages.message_youLeaveParty;
-								msg2 = msg2.replace("has", "have");
-								msg2 = msg2.replace("{PLAYERS}", list);
-								msg2 = msg2.replace("{REASON}", Messages.reasonYouYellow);
+								String list = Utils.partyMembersString(plugin, currentPartyId, cPlayer.getUniqueId());								
+								msg = Messages.message_youLeaveParty;
+								msg = msg.replace("has", "have");
+								msg = msg.replace("{PLAYERS}", list);
+								msg = msg.replace("{REASON}", Messages.reasonYouYellow);
 							}
 							
 							cPlayer.sendMessage(Utils.colorCodes(msg));
 						}	
 					}
 					
-					party.removeMember(player); // remove player from old party
+					party.removeMember(uuid); // remove player from old party
 					
 					// create a new party for the player
-					int newPartyId = plugin.createNewParty(player);
-					plugin.getACPlayer(player).setPartyId(newPartyId);
+					int newPartyId = plugin.createNewParty(uuid, Color.YELLOW);
+					plugin.getACPlayer(uuid).setPartyId(newPartyId);
+					
+					Utils.updateTeam(plugin, player.getUniqueId(), Color.YELLOW); // update the player teams
 				} catch(Exception e) {
 					e.printStackTrace();
+				}
+			} else {
+				party.setColor(Color.YELLOW); // update party color
+				
+				// notify all players on team and update their color on scoreboard
+				for (UUID member : party.getMembers()) {
+					Player partyPlayer = plugin.getServer().getPlayer(member);
+						
+					if (partyPlayer != null && plugin.getACPlayer(member) != null) {
+						ACPlayer currentACPlayer = plugin.getACPlayer(member);
+						
+						// notify player
+						String msg = Messages.prefix_Good + Messages.message_setYellow;
+						msg = msg.replace("{yellow_list}", Utils.playersString(plugin, currentACPlayer.getYellowList(), member));
+						msg = Utils.colorCodes(msg);
+						partyPlayer.sendMessage(msg);
+						
+						Utils.updateTeam(plugin, partyPlayer.getUniqueId(), Color.YELLOW); // update teams
+					}	
 				}
 			}
 		}

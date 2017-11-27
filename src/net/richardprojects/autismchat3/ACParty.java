@@ -28,6 +28,7 @@ public class ACParty {
 
 	private int id;
 	private ArrayList<UUID> members;
+	private Color color;
 	
 	public boolean needsUpdate;
 	
@@ -37,7 +38,9 @@ public class ACParty {
 	 * @param firstMember the party's first member's uuid
 	 * @param plugin a reference to the AutismChat3 plugin
 	 */
-	public ACParty(UUID firstMember, AutismChat3 plugin) {
+	public ACParty(UUID firstMember, Color color, AutismChat3 plugin) {
+		this.color = color;
+		
 		members = new ArrayList<>();
 		members.add(firstMember);
 		
@@ -60,9 +63,10 @@ public class ACParty {
 	 * @param members list of members of the party
 	 * @param id the party's id
 	 */
-	public ACParty(List<UUID> members, int id) {
+	public ACParty(List<UUID> members, int id, Color color) {
 		this.members = new ArrayList<>(members);
 		this.id = id;
+		this.color = color;
 		this.needsUpdate = true;
 	}
 	
@@ -86,6 +90,15 @@ public class ACParty {
 		this.needsUpdate = true;
 	}
 	
+	public void setColor(Color color) {
+		this.color = color;
+		this.needsUpdate = true;
+	}
+	
+	public Color getColor() {
+		return this.color;
+	}
+	
 	/**
 	 * Attempts to save a copy of the ACParty to disk. Returns true if 
 	 * successful and false if the operation failed.
@@ -106,6 +119,7 @@ public class ACParty {
 			
 			// save data
 			partyFile.set("members", Utils.convertListToString(members));
+			partyFile.set("color", Color.toString(color));
 			partyFile.save(file);
 			
 			this.needsUpdate = false;			

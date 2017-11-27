@@ -41,30 +41,34 @@ public class ChatEvent implements Listener {
 		Player player = e.getPlayer();
 		UUID uuid = player.getUniqueId();
 		ACPlayer acPlayer = plugin.getACPlayer(uuid);
-		String playerName = Color.colorCode(acPlayer.getColor()) + player.getName();
+		ACParty acParty = plugin.getACParty(acPlayer.getPartyId());
 		
-		int partyID = acPlayer.getPartyId();
-		ACParty party = plugin.getACParty(partyID);
-		
-		if (party != null) {
-			int playersSentTo = 0;
-			for (UUID cUUID : party.getMembers()) {
-				Player cPlayer = plugin.getServer().getPlayer(cUUID);
-				
-				if (cPlayer != null) {
-					String msg = Messages.partyChatFormat;
-					msg = msg.replace("%name%", playerName + ChatColor.RESET);
-					msg = msg.replace("%message%", chatMsg);
-					msg = Utils.colorCodes(msg);
-					cPlayer.sendMessage(msg);
-					playersSentTo++;
-				}
-			}
+		if (acParty != null) {
+			String playerName = Color.colorCode(acParty.getColor()) + player.getName();
 			
-			// notify the player if nobody heard their message
-			if(playersSentTo == 1 || playersSentTo == 0) {
-				String msg = Messages.prefix_Bad + Messages.message_nobodyHeardMessage;
-				player.sendMessage(Utils.colorCodes(msg));
+			int partyID = acPlayer.getPartyId();
+			ACParty party = plugin.getACParty(partyID);
+			
+			if (party != null) {
+				int playersSentTo = 0;
+				for (UUID cUUID : party.getMembers()) {
+					Player cPlayer = plugin.getServer().getPlayer(cUUID);
+					
+					if (cPlayer != null) {
+						String msg = Messages.partyChatFormat;
+						msg = msg.replace("%name%", playerName + ChatColor.RESET);
+						msg = msg.replace("%message%", chatMsg);
+						msg = Utils.colorCodes(msg);
+						cPlayer.sendMessage(msg);
+						playersSentTo++;
+					}
+				}
+				
+				// notify the player if nobody heard their message
+				if(playersSentTo == 1 || playersSentTo == 0) {
+					String msg = Messages.prefix_Bad + Messages.message_nobodyHeardMessage;
+					player.sendMessage(Utils.colorCodes(msg));
+				}
 			}
 		}
 	}

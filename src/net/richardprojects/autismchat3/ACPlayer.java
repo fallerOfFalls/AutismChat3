@@ -21,17 +21,17 @@ import org.bukkit.configuration.file.YamlConfiguration;
  * A simple class that represents an AutismChat3 player.
  * 
  * @author RichardB122
- * @version 4/15/17
+ * @version 11/22/17
  */
 public class ACPlayer {
 
 	private UUID uuid;
 	private int partyId;
-	private Color color;
 	private boolean globalChat;
 	private ArrayList<UUID> yellowList;
 	private boolean displayMotd;
 	public boolean needsUpdate;
+	private Color defaultColor;
 	
 	/**
 	 * Constructor for an ACPlayer that creates a completely new player. Use
@@ -43,26 +43,26 @@ public class ACPlayer {
 	 */
 	public ACPlayer(UUID uuid, int partyId) {
 		this.uuid = uuid;
-		this.partyId = partyId;
-		this.needsUpdate = true;
-		
-		this.color = Config.templateColor;
+		this.partyId = partyId;		
+		this.defaultColor = Config.templateDefaultColor;
 		this.globalChat = Config.templateGlobalChat;
 		this.displayMotd = Config.templateMotd;
 		this.yellowList = new ArrayList<UUID>();
+		
+		this.needsUpdate = true;
 	}
 	
 	/**
 	 * Constructor for an ACPlayer that is being loaded. In this constructor 
 	 * you must provide all variables.
 	 */
-	public ACPlayer(UUID uuid, int partyId, Color color, boolean globalChat, ArrayList<UUID> yellowList, boolean displayMotd) {
+	public ACPlayer(UUID uuid, int partyId, Color defaultColor, boolean globalChat, ArrayList<UUID> yellowList, boolean displayMotd) {
 		this.uuid = uuid;
 		this.partyId = partyId;
-		this.color = color;
 		this.globalChat = globalChat;
 		this.yellowList = yellowList;
 		this.displayMotd = displayMotd;
+		this.defaultColor = defaultColor;
 		this.needsUpdate = false;
 	}
 	
@@ -75,12 +75,12 @@ public class ACPlayer {
 		this.needsUpdate = true;
 	}
 
-	public Color getColor() {
-		return color;
+	public Color getDefaultColor() {
+		return defaultColor;
 	}
 
-	public void setColor(Color color) {
-		this.color = color;
+	public void setDefaultColor(Color color) {
+		this.defaultColor = color;
 		this.needsUpdate = true;
 	}
 
@@ -143,7 +143,7 @@ public class ACPlayer {
 			
 			// save data
 			playerFile.set("partyId", partyId);
-			playerFile.set("color", Color.toString(color));
+			playerFile.set("defaultColor", Color.toString(defaultColor));
 			playerFile.set("globalChat", globalChat);
 			playerFile.set("yellowList", Utils.convertListToString(yellowList));
 			playerFile.set("displayMotd", displayMotd);

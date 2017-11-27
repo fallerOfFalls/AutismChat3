@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Team;
 
 import net.md_5.bungee.api.ChatColor;
 
@@ -26,118 +27,7 @@ public class Utils {
 	
 	public static void sendStatus(String status, UUID uuid, AutismChat3 plugin) {
 		Player player = plugin.getServer().getPlayer(uuid);
-		ACPlayer acPlayer = plugin.getACPlayer(uuid);
-		if(player == null || acPlayer == null) {
-			return;
-		}
-		
-		if(status.equals("yellowList")) {
-			String msg = Messages.status_yellowList;
-			String yellowListString = "";
-			
-			List<UUID> yellowListMembers = acPlayer.getYellowList();
-			for(UUID member : yellowListMembers) {
-				String playerName = plugin.getName(member);
-				if(playerName != null) {
-					playerName = Utils.formatName(plugin, member, player.getUniqueId());
-					yellowListString += ", " + playerName;
-				}
-			}
-			if(yellowListMembers.size() > 0) {
-				yellowListString = yellowListString.substring(2);
-				msg = msg.replace("{yellow_list}", yellowListString);
-			} else {
-				msg = msg.replace("{yellow_list}", "NONE");
-			}
-			player.sendMessage(Utils.colorCodes(msg));
-		} else if(status.equals("colourSetting")) {
-			Color playersColor = acPlayer.getColor();
-			String msg = Messages.status_colorSetting;
-			
-			msg = msg.replace("{COLORSTATUS}", Color.colorCode(playersColor) + Color.toString(playersColor));
-			
-			player.sendMessage(Utils.colorCodes(msg));
-		} else if(status.equals("globalChat")) {
-			String msg = Messages.status_globalChat;
-			
-			if(acPlayer.isGlobalChatEnabled()) {
-				msg = msg.replace("{yesno}", "Yes");
-			} else {
-				msg = msg.replace("{yesno}", "No");
-			}
-			
-			player.sendMessage(Utils.colorCodes(msg));
-		} else if(status.equals("partyMembers")) {
-			String msg = Messages.status_partyMembers;
-			String pName = Utils.formatName(plugin, player.getUniqueId(), player.getUniqueId());
-			msg = msg.replace("{TARGET}", pName);
-			msg = msg.replace("{BEINGVERB}", "are");
-			String onlineMemberString = "";
-			
-			int partyId = acPlayer.getPartyId();
-			if(plugin.getACParty(partyId) != null) {
-				List<UUID> partyMembers = plugin.getACParty(partyId).getMembers();
-				List<UUID> onlineMembers = new ArrayList<UUID>();
-				for(UUID member : partyMembers) {
-					Player cPlayer = plugin.getServer().getPlayer(member);
-					if(cPlayer != null) {
-						onlineMembers.add(member);
-					}
-				}
-				
-				// create list of players in the party who are online
-				for(UUID member : onlineMembers) {
-					if(!member.equals(player.getUniqueId())) {
-						String playerName = plugin.getName(member);
-						if(playerName != null) {
-							playerName = Utils.formatName(plugin, member, player.getUniqueId());
-							onlineMemberString += ", " + playerName;
-						}
-					}
-				}
-				if(onlineMembers.size() > 1) {
-					onlineMemberString = onlineMemberString.substring(2);
-					onlineMemberString = onlineMemberString + "&r";
-				} else {
-					onlineMemberString = "NONE";
-				}
-				
-				// replace
-				String partyMemberString = Utils.partyMembersString(plugin, partyId, player.getUniqueId());
-				msg = msg.replace("{PARTYMEMBERS}", partyMemberString);
-				msg = msg.replace("{ONLINEPARTYMEMBERS}", onlineMemberString);
-			} else {
-				msg = msg.replace("{PARTYMEMBERS}", "NONE");
-				msg = msg.replace("{ONLINEPARTYMEMBERS}", "NONE");
-			}
-			
-			// send message to player
-			player.sendMessage(Utils.colorCodes(msg));
-		} else if (status.equals("othersYellowList")) {
-			String msg = Messages.status_othersYellowList;			
-			String othersYellowList = "";
-			
-			// loop through all players and check their yellow lists.
-			for (UUID playerUUID : plugin.playersUUIDs()) {
-				ACPlayer currentACPlayer = plugin.getACPlayer(playerUUID);
-				if (currentACPlayer == null) continue;
-				
-				if (currentACPlayer.getYellowList().contains(player.getUniqueId())) {
-					String name = Utils.formatName(plugin, playerUUID, player.getUniqueId());
-					othersYellowList += "&r, " + name;
-				}
-			}
-			
-			// clean up the list
-			if (othersYellowList.length() > 3) {
-				othersYellowList = othersYellowList.substring(4);
-			} else {
-				othersYellowList = "&rNONE";
-			}
-			
-			msg = msg.replace("{others_yellow_list}", othersYellowList);			
-			player.sendMessage(colorCodes(msg));
-		}
+		sendStatus(status, player, uuid, plugin);
 	}
 	
 	public static void sendStatus(String status, Player receiver, UUID uuid, AutismChat3 plugin) {
@@ -163,11 +53,16 @@ public class Utils {
 			}
 			receiver.sendMessage(Utils.colorCodes(msg));
 		} else if (status.equals("colourSetting")) {
-			Color playersColor = uuidPlayer.getColor();
+			Color playersColor = null;
+			
+			if (uuidPlayer.getPartyId() > 0 && plugin.getACParty(uuidPlayer.getPartyId()) != null) {
+				playersColor = plugin.getACParty(uuidPlayer.getPartyId()).getColor();
+			} else {
+				playersColor = uuidPlayer.getDefaultColor();
+			}
+			
 			String msg = Messages.status_colorSetting;
-			
 			msg = msg.replace("{COLORSTATUS}", Color.colorCode(playersColor) + Color.toString(playersColor));
-			
 			receiver.sendMessage(Utils.colorCodes(msg));
 		} else if (status.equals("globalChat")) {
 			String msg = Messages.status_globalChat;
@@ -256,14 +151,19 @@ public class Utils {
 	 * @return formatted name
 	 */
 	public static String formatName(AutismChat3 plugin, UUID player, UUID perspective) {
+		ACPlayer acPlayer = plugin.getACPlayer(player);
+		if (acPlayer == null) return "";
+		ACParty acParty = plugin.getACParty(acPlayer.getPartyId());
+		if (acParty == null) return "";
+		
 		if (perspective != null && player.equals(perspective)) {
 			// format player name from their perspective, so "You"
 			String name = "You";
-			name = Color.colorCode(plugin.getACPlayer(player).getColor()) + name;
+			name = Color.colorCode(acParty.getColor()) + name;
 			return colorCodes(name + "&r");
 		} else {
 			String name = plugin.getName(player);
-			name = Color.colorCode(plugin.getACPlayer(player).getColor()) + name;
+			name = Color.colorCode(acParty.getColor()) + name;
 			return colorCodes(name + "&r");
 		}
 	}
@@ -278,10 +178,21 @@ public class Utils {
 	 */
 	public static String partyMembersString(AutismChat3 plugin, int partyId, UUID uuid) {
 		if (plugin.getACParty(partyId) == null) return null;
-		
-		String partyMemberString = "";
 		List<UUID> partyMembers = plugin.getACParty(partyId).getMembers();
-		for(UUID member : partyMembers) {
+		return playersString(plugin, partyMembers, uuid);
+	}
+	
+	/**
+	 * This method creates a formatted list of members in the specified party.
+	 * 
+	 * @param plugin A reference to the AutismChat3 plugin
+	 * @param partyId the id of the party to generate a member list for
+	 * @param uuid the player's perspective that this is from
+	 * @return
+	 */
+	public static String playersString(AutismChat3 plugin, List<UUID> players, UUID uuid) {
+		String partyMemberString = "";
+		for(UUID member : players) {
 			if(!member.equals(uuid)) {
 				String playerName = plugin.getName(member);
 				if(playerName != null) {
@@ -367,5 +278,38 @@ public class Utils {
 		}
 		
 		return list;
+	}
+	
+	public static void updateTeam(AutismChat3 plugin, UUID uuid, Color newColor) {
+		Player player = plugin.getServer().getPlayer(uuid);
+		if (player == null) return;
+		
+		// remove player from all teams
+		Team playerTeam = AutismChat3.board.getPlayerTeam(player);
+		if(playerTeam != null) {
+			String name = playerTeam.getName();
+			if(name.equals("greenTeam")) {
+				AutismChat3.greenTeam.removePlayer(player);
+			} else if(name.equals("yellowTeam")) {
+				AutismChat3.yellowTeam.removePlayer(player);
+			} else if(name.equals("redTeam")) {
+				AutismChat3.redTeam.removePlayer(player);
+			} else if(name.equals("blueTeam")) {
+				AutismChat3.blueTeam.removePlayer(player);
+			}
+		}
+		
+		// add player to the new team
+		Team team = null;
+		if (newColor == Color.RED) team = AutismChat3.redTeam;
+		if (newColor == Color.GREEN) team = AutismChat3.greenTeam;
+		if (newColor == Color.YELLOW) team = AutismChat3.yellowTeam;
+		if (newColor == Color.BLUE) team = AutismChat3.blueTeam;
+		if (team != null) team.addPlayer(player);
+		
+		// update all player's scoreboards
+		for(Player cPlayer : plugin.getServer().getOnlinePlayers()) {
+			cPlayer.setScoreboard(AutismChat3.board);
+		}
 	}
 }

@@ -25,8 +25,7 @@ public class Config {
 	public static ChatColor red;
 	public static ChatColor green;
 	public static ChatColor yellow;
-	public static int templatePartyID;
-	public static Color templateColor;
+	public static Color templateDefaultColor;
 	public static boolean templateGlobalChat;
 	public static boolean templateMotd;
 	public static boolean displayLoginMesagesToRedPlayers;
@@ -70,8 +69,7 @@ public class Config {
 			redHidesLoginNotification = config.getBoolean("redhidesloginnotify");
 			loginReport = config.getBoolean("showLoginReport");
 						
-			templatePartyID = config.getInt("templateForFirstLogin.partyID");
-			templateColor = Color.parseString(config.getString("templateForFirstLogin.color"));
+			templateDefaultColor = Color.parseString(config.getString("templateForFirstLogin.defaultColor"));
 			templateGlobalChat = config.getBoolean("templateForFirstLogin.globalChat");
 			templateMotd = config.getBoolean("templateForFirstLogin.displayMotd");
 			

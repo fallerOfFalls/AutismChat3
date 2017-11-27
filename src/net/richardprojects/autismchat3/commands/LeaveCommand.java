@@ -10,12 +10,12 @@
 
 package net.richardprojects.autismchat3.commands;
 
-import java.io.File;
-import java.util.List;
 import java.util.UUID;
 
 import net.richardprojects.autismchat3.AutismChat3;
+import net.richardprojects.autismchat3.Color;
 import net.richardprojects.autismchat3.ACParty;
+import net.richardprojects.autismchat3.ACPlayer;
 import net.richardprojects.autismchat3.Messages;
 import net.richardprojects.autismchat3.Utils;
 
@@ -43,11 +43,13 @@ public class LeaveCommand implements CommandExecutor {
 						ACParty party = plugin.getACParty(partyId);
 						
 						if (party != null) {
+							Color oldPartyColor = party.getColor();
 							if (party.getMembers().size() > 1) {
 								try {
 									// create a new party and update id
-									int newPartyId = plugin.createNewParty(player.getUniqueId());
-									plugin.getACPlayer(player.getUniqueId()).setPartyId(newPartyId);
+									ACPlayer acPlayer = plugin.getACPlayer(player.getUniqueId());
+									int newPartyId = plugin.createNewParty(player.getUniqueId(), acPlayer.getDefaultColor());
+									acPlayer.setPartyId(newPartyId);
 									
 									party.removeMember(player.getUniqueId()); // remove player from old party
 									
@@ -75,6 +77,57 @@ public class LeaveCommand implements CommandExecutor {
 									msg = msg.replace(" {REASON}", "");
 									player.sendMessage(Utils.colorCodes(msg));
 									
+									// notify player who left they have been switched to default color
+									if (oldPartyColor != acPlayer.getDefaultColor()) {
+										if (acPlayer.getDefaultColor() == Color.GREEN) {
+											msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setGreen);
+										} else if (acPlayer.getDefaultColor() == Color.WHITE) {
+											msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setWhite);
+										} else if (acPlayer.getDefaultColor() == Color.YELLOW) {
+											msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setYellow);
+										} else if (acPlayer.getDefaultColor() == Color.RED) {
+											msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setRed);
+										} else if (acPlayer.getDefaultColor() == Color.BLUE) {
+											msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setBlue);
+										} else {
+											msg = "";
+										}
+										
+										// actually message player and update team color
+										player.sendMessage(msg);
+										Utils.updateTeam(plugin, player.getUniqueId(), acPlayer.getDefaultColor());
+									}
+									
+									// set party color to match player's default color
+									if (party.getMembers().size() == 1) {
+										UUID lastPlayer = party.getMembers().get(0);
+										if (lastPlayer != null && plugin.getACPlayer(lastPlayer) != null) {
+											ACPlayer player = plugin.getACPlayer(lastPlayer);
+											if (plugin.getACParty(player.getPartyId()) != null) {
+												plugin.getACParty(player.getPartyId()).setColor(player.getDefaultColor());
+												
+												if (player.getDefaultColor() == Color.GREEN) {
+													msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setGreen);
+												} else if (player.getDefaultColor() == Color.WHITE) {
+													msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setWhite);
+												} else if (player.getDefaultColor() == Color.YELLOW) {
+													msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setYellow);
+												} else if (player.getDefaultColor() == Color.RED) {
+													msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setRed);
+												} else if (player.getDefaultColor() == Color.BLUE) {
+													msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setBlue);
+												}
+												
+												if (plugin.getServer().getPlayer(lastPlayer) != null) {
+													plugin.getServer().getPlayer(lastPlayer).sendMessage(msg);
+												}
+												
+												// update team colors
+												Utils.updateTeam(plugin, lastPlayer, player.getDefaultColor());
+											}
+											
+										}
+									}									
 								} catch(Exception e) {
 									e.printStackTrace();
 								}
