@@ -51,11 +51,13 @@ public class WhiteCommand implements CommandExecutor {
 				acParty.setColor(Color.WHITE); // update party to white
 				
 				// notify all players on team and update their color on scoreboard
-				String msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setWhite);
 				for (UUID cUUID : acParty.getMembers()) {
 					Player partyPlayer = plugin.getServer().getPlayer(cUUID);
 					
 					if (partyPlayer != null) {
+						String msg = Messages.prefix_Good + Messages.message_setWhite;
+						msg = msg.replace("{PLAYER}", Utils.formatName(plugin, player.getUniqueId(), partyPlayer.getUniqueId()));
+						msg = Utils.colorCodes(msg);
 						partyPlayer.sendMessage(msg); // notify player
 						
 						Team playerTeam = AutismChat3.board.getPlayerTeam(partyPlayer);

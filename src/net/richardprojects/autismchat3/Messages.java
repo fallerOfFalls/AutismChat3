@@ -29,6 +29,7 @@ public class Messages {
 	public static String status_globalChat;
 	public static String status_partyMembers;
 	public static String status_othersYellowList;
+	public static String status_defaultColor;
 	public static String prefix_Bad;
 	public static String prefix_Good;
 	public static String prefix_MessageReceiving;
@@ -56,6 +57,8 @@ public class Messages {
 	public static String message_setWhite;
 	public static String message_setGreen;
 	public static String message_setBlue;
+	public static String message_setDefault;
+	public static String message_setColorInNewParty;
 	public static String message_globalChatOff;
 	public static String message_globalChatOn;
 	public static String message_motdOn;
@@ -82,6 +85,7 @@ public class Messages {
 	public static String reasonJoinedAnotherParty;
 	public static String message_youJoinParty;
 	public static String message_youLeaveParty;
+	public static String message_defaultCommand;
 	public static List<String> motd = new ArrayList<String>();
 	public static List<String> help = new ArrayList<String>();
 	
@@ -125,6 +129,7 @@ public class Messages {
 			message_setWhite = messagesConfig.getString("statusSetWhite");
 			message_setGreen = messagesConfig.getString("statusSetGreen");
 			message_setBlue = messagesConfig.getString("statusSetBlue");
+			message_setDefault = messagesConfig.getString("statusSetDefault");
 			message_reload = messagesConfig.getString("reload");
 			message_globalChatOff = messagesConfig.getString("globalChatOff");
 			message_globalChatOn = messagesConfig.getString("globalChatOn");
@@ -147,7 +152,8 @@ public class Messages {
 			message_youLeaveParty = messagesConfig.getString("youLeaveParty");
 			message_youJoinParty = messagesConfig.getString("youJoinParty");
 			message_loadingSettings = messagesConfig.getString("loadingSettingsMsg");
-			
+			message_defaultCommand = messagesConfig.getString("defaultCommand");
+			message_setColorInNewParty = messagesConfig.getString("statusSetColorInNewParty");
 			message_onlyOneInParty = messagesConfig.getString("leavingPartyWithOnlyOnePersonInIt");
 			
 			error_JoinParty1 = messagesConfig.getString("partyJoinErrorMessages.1");
@@ -176,6 +182,7 @@ public class Messages {
 			status_globalChat = messagesConfig.getString("status.globalChat");
 			status_partyMembers = messagesConfig.getString("status.partyMembers");
 			status_othersYellowList = messagesConfig.getString("status.othersYellowList");
+			status_defaultColor = messagesConfig.getString("status.defaultColor");
 			
 			// load join messages
 			message_joinMessage = messagesConfig.getString("joinMessage");

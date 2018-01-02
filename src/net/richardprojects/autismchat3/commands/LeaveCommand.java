@@ -79,21 +79,23 @@ public class LeaveCommand implements CommandExecutor {
 									
 									// notify player who left they have been switched to default color
 									if (oldPartyColor != acPlayer.getDefaultColor()) {
+										msg = Messages.prefix_Good + Messages.message_setDefault; 
 										if (acPlayer.getDefaultColor() == Color.GREEN) {
-											msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setGreen);
+											msg = msg.replace("{COLOR}", Messages.color_green + "Green&6");
 										} else if (acPlayer.getDefaultColor() == Color.WHITE) {
-											msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setWhite);
+											msg = msg.replace("{COLOR}", "&fWhite&6");
 										} else if (acPlayer.getDefaultColor() == Color.YELLOW) {
-											msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setYellow);
+											msg = msg.replace("{COLOR}", Messages.color_yellow + "Yellow&6");
 										} else if (acPlayer.getDefaultColor() == Color.RED) {
-											msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setRed);
+											msg = msg.replace("{COLOR}", Messages.color_red + "Red&6");
 										} else if (acPlayer.getDefaultColor() == Color.BLUE) {
-											msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setBlue);
+											msg = msg.replace("{COLOR}", Messages.color_blue + "Blue&6");
 										} else {
 											msg = "";
 										}
 										
 										// actually message player and update team color
+										msg = Utils.colorCodes(msg);
 										player.sendMessage(msg);
 										Utils.updateTeam(plugin, player.getUniqueId(), acPlayer.getDefaultColor());
 									}
@@ -106,17 +108,21 @@ public class LeaveCommand implements CommandExecutor {
 											if (plugin.getACParty(player.getPartyId()) != null) {
 												plugin.getACParty(player.getPartyId()).setColor(player.getDefaultColor());
 												
-												if (player.getDefaultColor() == Color.GREEN) {
-													msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setGreen);
+												msg = Messages.prefix_Good + Messages.message_setDefault; 
+												if (acPlayer.getDefaultColor() == Color.GREEN) {
+													msg = msg.replace("{COLOR}", Messages.color_green + "Green&6");
 												} else if (player.getDefaultColor() == Color.WHITE) {
-													msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setWhite);
+													msg = msg.replace("{COLOR}", "&fWhite&6");
 												} else if (player.getDefaultColor() == Color.YELLOW) {
-													msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setYellow);
+													msg = msg.replace("{COLOR}", Messages.color_yellow + "Yellow&6");
 												} else if (player.getDefaultColor() == Color.RED) {
-													msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setRed);
+													msg = msg.replace("{COLOR}", Messages.color_red + "Red&6");
 												} else if (player.getDefaultColor() == Color.BLUE) {
-													msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setBlue);
+													msg = msg.replace("{COLOR}", Messages.color_blue + "Blue&6");
+												} else {
+													msg = "";
 												}
+												msg = Utils.colorCodes(msg);
 												
 												if (plugin.getServer().getPlayer(lastPlayer) != null) {
 													plugin.getServer().getPlayer(lastPlayer).sendMessage(msg);

@@ -15,10 +15,10 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class GlobalMessageCommand implements CommandExecutor {
+public class AnnounceCommand implements CommandExecutor {
 	private AutismChat3 plugin;
 	
-	public GlobalMessageCommand(AutismChat3 plugin) {
+	public AnnounceCommand(AutismChat3 plugin) {
 		this.plugin = plugin;
 	}
 	

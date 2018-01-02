@@ -50,12 +50,15 @@ public class GreenCommand implements CommandExecutor {
 				acParty.setColor(Color.GREEN); // update party to green
 				
 				// notify all players on team and update their color on scoreboard
-				String msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setGreen);
 				for (UUID cUUID : acParty.getMembers()) {
 					Player partyPlayer = plugin.getServer().getPlayer(cUUID);
 					
 					if (partyPlayer != null) {
-						partyPlayer.sendMessage(msg); // notify player
+						// notify player
+						String msg = Messages.prefix_Good + Messages.message_setGreen;
+						msg = msg.replace("{PLAYER}", Utils.formatName(plugin, player.getUniqueId(), partyPlayer.getUniqueId()));
+						msg = Utils.colorCodes(msg);
+						partyPlayer.sendMessage(msg);
 						
 						// update scoreboard
 						Team playerTeam = AutismChat3.board.getPlayerTeam(partyPlayer);

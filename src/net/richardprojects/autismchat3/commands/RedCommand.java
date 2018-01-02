@@ -10,17 +10,7 @@
 
 package net.richardprojects.autismchat3.commands;
 
-import java.io.File;
-import java.util.List;
 import java.util.UUID;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import net.richardprojects.autismchat3.ACParty;
 import net.richardprojects.autismchat3.ACPlayer;
@@ -34,10 +24,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scoreboard.Team;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 public class RedCommand implements CommandExecutor {
 
@@ -86,8 +72,10 @@ public class RedCommand implements CommandExecutor {
 			ACPlayer acPlayer = plugin.getACPlayer(player);
 			int cPartyId = acPlayer.getPartyId();
 			ACParty party = plugin.getACParty(cPartyId);
+			boolean shouldReturnToDefault = false;
 			
 			if (party != null && party.getMembers().size() > 1) {
+				shouldReturnToDefault = true;
 				try {
 					// message everyone
 					for (UUID member : party.getMembers()) {
@@ -124,8 +112,42 @@ public class RedCommand implements CommandExecutor {
 			
 			// send message last so it is after the message about leaving the party.
 			if (plugin.getServer().getPlayer(player) != null) {
-				String msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setRed);
-				plugin.getServer().getPlayer(player).sendMessage(msg);
+				Player mPlayer = plugin.getServer().getPlayer(player);
+				String msg = Messages.prefix_Good + Messages.message_setRed;
+				msg = msg.replace("{PLAYER}", Utils.formatName(plugin, player, mPlayer.getUniqueId()));
+				msg = Utils.colorCodes(msg);
+				mPlayer.sendMessage(msg);
+			}
+			
+			// if previous party now only has one member set their color back to their default
+			if (party.getMembers().size() == 1 && shouldReturnToDefault) {
+				UUID lastPlayer = party.getMembers().get(0);
+				if (lastPlayer != null && plugin.getACPlayer(lastPlayer) != null) {
+					ACPlayer player = plugin.getACPlayer(lastPlayer);
+					party.setColor(player.getDefaultColor());
+					String msg = "";
+					
+					msg = Messages.prefix_Good + Messages.message_setDefault; 
+					if (player.getDefaultColor() == Color.GREEN) {
+						msg = msg.replace("{COLOR}", Messages.color_green + "Green&6");
+					} else if (player.getDefaultColor() == Color.WHITE) {
+						msg = msg.replace("{COLOR}", "&fWhite&6");
+					} else if (player.getDefaultColor() == Color.YELLOW) {
+						msg = msg.replace("{COLOR}", Messages.color_yellow + "Yellow&6");
+					} else if (player.getDefaultColor() == Color.RED) {
+						msg = msg.replace("{COLOR}", Messages.color_red + "Red&6");
+					} else if (player.getDefaultColor() == Color.BLUE) {
+						msg = msg.replace("{COLOR}", Messages.color_blue + "Blue&6");
+					}
+					msg = Utils.colorCodes(msg);
+					
+					if (plugin.getServer().getPlayer(lastPlayer) != null) {
+						plugin.getServer().getPlayer(lastPlayer).sendMessage(msg);
+					}
+					
+					// update team colors
+					Utils.updateTeam(plugin, lastPlayer, player.getDefaultColor());
+				}
 			}
 		}
 		

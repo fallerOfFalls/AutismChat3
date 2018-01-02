@@ -74,6 +74,12 @@ public class Utils {
 			}
 			
 			receiver.sendMessage(Utils.colorCodes(msg));
+		} else if (status.equals("defaultColor")) {
+			Color defaultColor = uuidPlayer.getDefaultColor();
+			
+			String msg = Messages.status_defaultColor;
+			msg = msg.replace("{COLOR}", Color.colorCode(defaultColor) + Color.toString(defaultColor));
+			receiver.sendMessage(Utils.colorCodes(msg));
 		} else if (status.equals("partyMembers")) {
 			String msg = Messages.status_partyMembers;
 			String name = Utils.formatName(plugin, uuid, receiver.getUniqueId());

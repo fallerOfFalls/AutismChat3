@@ -283,6 +283,36 @@ public class YellowCommand implements CommandExecutor {
 					plugin.getACPlayer(uuid).setPartyId(newPartyId);
 					
 					Utils.updateTeam(plugin, player.getUniqueId(), Color.YELLOW); // update the player teams
+					
+					// if previous party now only has one member set their color back to their default
+					if (party.getMembers().size() == 1) {
+						UUID lastPlayer = party.getMembers().get(0);
+						if (lastPlayer != null && plugin.getACPlayer(lastPlayer) != null) {
+							ACPlayer player = plugin.getACPlayer(lastPlayer);
+							party.setColor(player.getDefaultColor());
+							
+							String msg = Messages.prefix_Good + Messages.message_setDefault; 
+							if (acPlayer.getDefaultColor() == Color.GREEN) {
+								msg = msg.replace("{COLOR}", Messages.color_green + "Green&6");
+							} else if (player.getDefaultColor() == Color.WHITE) {
+								msg = msg.replace("{COLOR}", "&fWhite&6");
+							} else if (player.getDefaultColor() == Color.YELLOW) {
+								msg = msg.replace("{COLOR}", Messages.color_yellow + "Yellow&6");
+							} else if (player.getDefaultColor() == Color.RED) {
+								msg = msg.replace("{COLOR}", Messages.color_red + "Red&6");
+							} else if (player.getDefaultColor() == Color.BLUE) {
+								msg = msg.replace("{COLOR}", Messages.color_blue + "Blue&6");
+							}
+							msg = Utils.colorCodes(msg);
+								
+							if (plugin.getServer().getPlayer(lastPlayer) != null) {
+								plugin.getServer().getPlayer(lastPlayer).sendMessage(msg);
+							}
+							
+							// update team colors
+							Utils.updateTeam(plugin, lastPlayer, player.getDefaultColor());
+						}
+					}
 				} catch(Exception e) {
 					e.printStackTrace();
 				}
@@ -299,6 +329,7 @@ public class YellowCommand implements CommandExecutor {
 						// notify player
 						String msg = Messages.prefix_Good + Messages.message_setYellow;
 						msg = msg.replace("{yellow_list}", Utils.playersString(plugin, currentACPlayer.getYellowList(), member));
+						msg = msg.replace("{PLAYER}", Utils.formatName(plugin, uuid, partyPlayer.getUniqueId()));
 						msg = Utils.colorCodes(msg);
 						partyPlayer.sendMessage(msg);
 						

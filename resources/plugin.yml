@@ -18,10 +18,9 @@ commands:
     description: Leaves your current party and creates a new one with only you in it.
     usage: /<command>
     aliases: [l]
-  global:
-    description: Sends a message to global chat
+  announce:
+    description: Sends a message to everyone with announcements enabled.
     usage: /<command> <message>
-    aliases: [g]
   yellow:
     description: Allows you to manage your yellow list.
     usage: /<command> [add|remove <player>]|[list]
@@ -56,6 +55,9 @@ commands:
   me:
     description: Displays a message about yourself.
     usage: /me <message>
+  default:
+    description: Set your default color
+    usage: /<command> <color>    
   status:
     description: Displays some of your current settings in the AutismChat3 plugin
     usage: /<command> [player]

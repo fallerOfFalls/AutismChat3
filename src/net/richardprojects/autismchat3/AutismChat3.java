@@ -20,8 +20,9 @@ import java.util.logging.Logger;
 
 import net.richardprojects.autismchat3.commands.AutismChatCommand;
 import net.richardprojects.autismchat3.commands.BlueCommand;
+import net.richardprojects.autismchat3.commands.DefaultCommand;
 import net.richardprojects.autismchat3.commands.GcCommand;
-import net.richardprojects.autismchat3.commands.GlobalMessageCommand;
+import net.richardprojects.autismchat3.commands.AnnounceCommand;
 import net.richardprojects.autismchat3.commands.GreenCommand;
 import net.richardprojects.autismchat3.commands.JoinCommand;
 import net.richardprojects.autismchat3.commands.LeaveCommand;
@@ -220,7 +221,7 @@ public class AutismChat3 extends JavaPlugin {
 	private void registerCommands() {
 		getCommand("leave").setExecutor(new LeaveCommand(this));
 		getCommand("yellow").setExecutor(new YellowCommand(this));
-		getCommand("global").setExecutor(new GlobalMessageCommand(this));
+		getCommand("announce").setExecutor(new AnnounceCommand(this));
 		getCommand("gc").setExecutor(new GcCommand(this));
 		getCommand("white").setExecutor(new WhiteCommand(this));
 		getCommand("red").setExecutor(new RedCommand(this));
@@ -229,13 +230,14 @@ public class AutismChat3 extends JavaPlugin {
 		getCommand("join").setExecutor(new JoinCommand(this));
 		getCommand("autismchat").setExecutor(new AutismChatCommand(this));
 		getCommand("status").setExecutor(new StatusCommand(this));
+		getCommand("default").setExecutor(new DefaultCommand(this));
 		
-		//Override Vanilla private message commands
+		// override vanilla private message commands
 		getCommand("w").setExecutor(new PrivateMessageCommands(this));
 		getCommand("tell").setExecutor(new PrivateMessageCommands(this));
 		getCommand("msg").setExecutor(new PrivateMessageCommands(this));
 		
-		//Override Vanilla me commmand
+		// override vanilla me commmand
 		getCommand("me").setExecutor(new MeCommand(this));
 	}
 	
@@ -459,25 +461,56 @@ public class AutismChat3 extends JavaPlugin {
 		if (oldColor != null && newParty.getColor() != oldColor) {
 			// notify player
 			Color newColor = newParty.getColor();
-			String msg = "";
+			String msg = Messages.prefix_Good + Messages.message_setColorInNewParty;
+			
 			if (newColor == Color.GREEN) {
-				msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setGreen);
+				msg = msg.replace("{COLOR}", Messages.color_green + "Green&6");
 			} else if (newColor == Color.WHITE) {
-				msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setWhite);
+				msg = msg.replace("{COLOR}", "&fWhite&6");
 			} else if (newColor == Color.YELLOW) {
-				msg = Messages.prefix_Good + Messages.message_setYellow;
-				msg = msg.replace("{yellow_list}", Utils.playersString(this, acPlayer.getYellowList(), player));
-				msg = Utils.colorCodes(msg);
+				msg = msg.replace("{COLOR}", Messages.color_yellow + "Yelloow&6");				
 			} else if (newColor == Color.RED) {
-				msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setRed);
+				msg = msg.replace("{COLOR}", Messages.color_red + "Red&6");
 			} else if (newColor == Color.BLUE) {
-				msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setBlue);
+				msg = msg.replace("{COLOR}", Messages.color_blue + "Blue&6");
 			}
+			
+			msg = Utils.colorCodes(msg);
+			
 			if (getServer().getPlayer(player) != null) {
 				getServer().getPlayer(player).sendMessage(msg);
 			}
 			
 			Utils.updateTeam(this, player, newColor); // update teams			
+		}
+		
+		// if previous party now only has one member set their color back to their default
+		if (oldParty.getMembers().size() == 1) {
+			UUID lastPlayer = oldParty.getMembers().get(0);
+			if (lastPlayer != null && getACPlayer(lastPlayer) != null) {
+				ACPlayer lastACPlayer = getACPlayer(lastPlayer);
+				oldParty.setColor(lastACPlayer.getDefaultColor());
+				String msg = "";
+				
+				if (lastACPlayer.getDefaultColor() == Color.GREEN) {
+					msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setGreen);
+				} else if (lastACPlayer.getDefaultColor() == Color.WHITE) {
+					msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setWhite);
+				} else if (lastACPlayer.getDefaultColor() == Color.YELLOW) {
+					msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setYellow);
+				} else if (lastACPlayer.getDefaultColor() == Color.RED) {
+					msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setRed);
+				} else if (lastACPlayer.getDefaultColor() == Color.BLUE) {
+					msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setBlue);
+				}
+					
+				if (getServer().getPlayer(lastPlayer) != null) {
+					getServer().getPlayer(lastPlayer).sendMessage(msg);
+				}
+				
+				// update team colors
+				Utils.updateTeam(this, lastPlayer, lastACPlayer.getDefaultColor());
+			}
 		}
 		
 		return true;
