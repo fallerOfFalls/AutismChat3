@@ -65,7 +65,7 @@ nobodyHeardMessage: 'There are no other online players in your party so nobody h
 gcAutoEnabled: 'Announcements have been automatically enabled so that you can see the response to your message.'
 partyJoinErrorMessages:
     1: 'You cannot join {PLAYER}&c in a party because they are red.'
-    2: 'You cannot join the party {MEMBERS}&c because you are not on the following players {NOT_ON_LIST}&c yellow lists.'
+    2: 'You cannot join the party {MEMBERS}&c because you are not on the yellow list of {NOT_ON_LIST}&c.'
 #   3: 'You cannot join a party while you are red.'
     4: 'You cannot join the party {MEMBERS}&c because {NOT_ON_LIST}&c are not on your yellow list.'
     5: 'You cannot join {PLAYER}&c because you are already in a party with them.'
