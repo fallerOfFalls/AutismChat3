@@ -61,7 +61,7 @@ noSendingRed: 'You cannot send messages because you are &4RED&c!'
 noSendingYellow: 'You cannot send {RECEIVER}&c messages because you are &6YELLOW&c and they are not on your list!'
 invalidArgs: 'Your command included invalid arguments. Usage:'
 noMessageEntered: 'You must enter a message to announce.'
-nobodyHeardMessage: 'There are no other online players in your party so nobody heard your message. To join another player in a party use /join <player>. To send an important announcement to everyone use /announce <message>.'
+nobodyHeardMessage: 'There are no other online players in your party so nobody heard your message. To join another player in a party use /join <player>. If you don't like to be so forward, use /green and wait to be scooped.'
 gcAutoEnabled: 'Announcements have been automatically enabled so that you can see the response to your message.'
 partyJoinErrorMessages:
     1: 'You cannot join {PLAYER}&c in a party because they are red.'
