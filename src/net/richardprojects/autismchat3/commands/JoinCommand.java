@@ -67,7 +67,6 @@ private AutismChat3 plugin;
 			return;
 		}
 		requestedParty = plugin.getACParty(partyId);
-		List<UUID> partyMembers = plugin.getACParty(partyId).getMembers();
 		
 		// check 6 - prevent player from partying with them self
 		if(newUUID.equals(player.getUniqueId())) {
@@ -80,6 +79,15 @@ private AutismChat3 plugin;
 		if (acPlayer.getPartyId() == requestedParty.getId()) {
 			String pName = Utils.formatName(plugin, newUUID, player.getUniqueId());
 			String msg = Messages.prefix_Bad + Messages.error_JoinParty5;
+			msg = msg.replace("{PLAYER}", pName);
+			player.sendMessage(Utils.colorCodes(msg));
+			return;
+		}
+		
+		// check 1 - prevent a player from joining a party that is red
+		if(requestedParty.getColor() == Color.RED) {
+			String msg = Messages.prefix_Bad + Messages.error_JoinParty1;
+			String pName = Utils.formatName(plugin, newUUID, player.getUniqueId());
 			msg = msg.replace("{PLAYER}", pName);
 			player.sendMessage(Utils.colorCodes(msg));
 			return;
@@ -107,13 +115,6 @@ private AutismChat3 plugin;
 				return;
 			}			
 		}
-				
-		// check 3 - removed since players no longer have colors
-		/*if(requestedParty.getColor() == Color.RED) {
-			String msg = Messages.prefix_Bad + Messages.error_JoinParty3;
-			player.sendMessage(Utils.colorCodes(msg));
-			return;
-		}*/
 		
 		// check 4 - if party is yellow make players are on the player who is joining's yellow list.
 		if(requestedParty.getColor() == Color.YELLOW) {

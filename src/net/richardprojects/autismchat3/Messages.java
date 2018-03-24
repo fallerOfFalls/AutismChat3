@@ -44,7 +44,6 @@ public class Messages {
 	public static String error_noMessage;
 	public static String error_JoinParty1;
 	public static String error_JoinParty2;
-	//public static String error_JoinParty3;
 	public static String error_JoinParty4;
 	public static String error_JoinParty5;
 	public static String error_JoinParty6;

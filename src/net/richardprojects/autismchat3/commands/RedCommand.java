@@ -74,7 +74,15 @@ public class RedCommand implements CommandExecutor {
 			ACParty party = plugin.getACParty(cPartyId);
 			boolean shouldReturnToDefault = false;
 			
-			if (party != null && party.getMembers().size() > 1) {
+			if (party == null) {
+				// TODO: Write a method that can automatically recover from a 
+				// player not having a party by making a new one for them and 
+				// reporting it in the log
+				
+				return; // something really weird has happened
+			}
+			
+			if (party.getMembers().size() > 1) {
 				shouldReturnToDefault = true;
 				try {
 					// message everyone
@@ -110,6 +118,41 @@ public class RedCommand implements CommandExecutor {
 				}
 			}
 			
+			if (party.getMembers().size() == 1) {
+				if (shouldReturnToDefault) {
+					// if previous party now only has one member set their color back to their default
+					UUID lastPlayer = party.getMembers().get(0);
+					if (lastPlayer != null && plugin.getACPlayer(lastPlayer) != null) {
+						ACPlayer player = plugin.getACPlayer(lastPlayer);
+						party.setColor(player.getDefaultColor());
+						String msg = "";
+						
+						msg = Messages.prefix_Good + Messages.message_setDefault; 
+						if (player.getDefaultColor() == Color.GREEN) {
+							msg = msg.replace("{COLOR}", Messages.color_green + "Green&6");
+						} else if (player.getDefaultColor() == Color.WHITE) {
+							msg = msg.replace("{COLOR}", "&fWhite&6");
+						} else if (player.getDefaultColor() == Color.YELLOW) {
+							msg = msg.replace("{COLOR}", Messages.color_yellow + "Yellow&6");
+						} else if (player.getDefaultColor() == Color.RED) {
+							msg = msg.replace("{COLOR}", Messages.color_red + "Red&6");
+						} else if (player.getDefaultColor() == Color.BLUE) {
+							msg = msg.replace("{COLOR}", Messages.color_blue + "Blue&6");
+						}
+						msg = Utils.colorCodes(msg);
+						
+						if (plugin.getServer().getPlayer(lastPlayer) != null) {
+							plugin.getServer().getPlayer(lastPlayer).sendMessage(msg);
+						}
+						
+						// update team colors
+						Utils.updateTeam(plugin, lastPlayer, player.getDefaultColor());
+					}
+				} else {
+					party.setColor(Color.RED); // the player was alone and is just updating their color
+				}
+			}
+			
 			// send message last so it is after the message about leaving the party.
 			if (plugin.getServer().getPlayer(player) != null) {
 				Player mPlayer = plugin.getServer().getPlayer(player);
@@ -117,37 +160,6 @@ public class RedCommand implements CommandExecutor {
 				msg = msg.replace("{PLAYER}", Utils.formatName(plugin, player, mPlayer.getUniqueId()));
 				msg = Utils.colorCodes(msg);
 				mPlayer.sendMessage(msg);
-			}
-			
-			// if previous party now only has one member set their color back to their default
-			if (party.getMembers().size() == 1 && shouldReturnToDefault) {
-				UUID lastPlayer = party.getMembers().get(0);
-				if (lastPlayer != null && plugin.getACPlayer(lastPlayer) != null) {
-					ACPlayer player = plugin.getACPlayer(lastPlayer);
-					party.setColor(player.getDefaultColor());
-					String msg = "";
-					
-					msg = Messages.prefix_Good + Messages.message_setDefault; 
-					if (player.getDefaultColor() == Color.GREEN) {
-						msg = msg.replace("{COLOR}", Messages.color_green + "Green&6");
-					} else if (player.getDefaultColor() == Color.WHITE) {
-						msg = msg.replace("{COLOR}", "&fWhite&6");
-					} else if (player.getDefaultColor() == Color.YELLOW) {
-						msg = msg.replace("{COLOR}", Messages.color_yellow + "Yellow&6");
-					} else if (player.getDefaultColor() == Color.RED) {
-						msg = msg.replace("{COLOR}", Messages.color_red + "Red&6");
-					} else if (player.getDefaultColor() == Color.BLUE) {
-						msg = msg.replace("{COLOR}", Messages.color_blue + "Blue&6");
-					}
-					msg = Utils.colorCodes(msg);
-					
-					if (plugin.getServer().getPlayer(lastPlayer) != null) {
-						plugin.getServer().getPlayer(lastPlayer).sendMessage(msg);
-					}
-					
-					// update team colors
-					Utils.updateTeam(plugin, lastPlayer, player.getDefaultColor());
-				}
 			}
 		}
 		
