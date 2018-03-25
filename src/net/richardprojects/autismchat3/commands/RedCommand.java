@@ -37,7 +37,6 @@ public class RedCommand implements CommandExecutor {
 			String[] args) {
 		if (sender instanceof Player) {
 			final Player player = (Player) sender;
-			final ACPlayer acPlayer = plugin.getACPlayer(player.getUniqueId());
 			
 			if (args.length == 0) {
 				Utils.updateTeam(plugin, player.getUniqueId(), Color.RED); // update team

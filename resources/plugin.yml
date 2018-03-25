@@ -1,7 +1,7 @@
 name: AutismChat4
 main: net.richardprojects.autismchat3.AutismChat3
 description: 'AutismChat is a plugin designed by fallerOfFalls to give those on the autistic spectrum (and anyone else) more control over the chat-related stimulus they receive, regardless of the number of players online.'
-version: Build 1
+version: Build 3
 permissions:
   autismchat.admin.blue:
     description: Allows an admin to use the blue command

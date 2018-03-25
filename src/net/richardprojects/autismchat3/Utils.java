@@ -175,6 +175,35 @@ public class Utils {
 	}
 	
 	/**
+	 * This method generates a formatted name with the provided color of the
+	 * player who's UUID is provided.
+	 * 
+	 * @param plugin an instance of the AutismChat3 plugin
+	 * @param player the UUID of the player's name to be formatted
+	 * @param perspective the perspective of the player to see the formatted 
+	 * name (can be null)
+	 * @param color the color to use
+	 * @return formatted name
+	 */
+	public static String formatName(AutismChat3 plugin, UUID player, UUID perspective, Color color) {
+		ACPlayer acPlayer = plugin.getACPlayer(player);
+		if (acPlayer == null) return "";
+		ACParty acParty = plugin.getACParty(acPlayer.getPartyId());
+		if (acParty == null) return "";
+		
+		if (perspective != null && player.equals(perspective)) {
+			// format player name from their perspective, so "You"
+			String name = "You";
+			name = Color.colorCode(color) + name;
+			return colorCodes(name + "&r");
+		} else {
+			String name = plugin.getName(player);
+			name = Color.colorCode(color) + name;
+			return colorCodes(name + "&r");
+		}
+	}
+	
+	/**
 	 * This method creates a formatted list of members in the specified party.
 	 * 
 	 * @param plugin A reference to the AutismChat3 plugin

@@ -227,30 +227,49 @@ public class YellowCommand implements CommandExecutor {
 			ACPlayer acPlayer = plugin.getACPlayer(uuid);
 			int currentPartyId = acPlayer.getPartyId();
 			ACParty party;
+			
 			// make sure player and party exist
 			if (acPlayer == null || plugin.getACParty(acPlayer.getPartyId()) == null) {
 				String msg = Utils.colorCodes(Messages.prefix_Bad + "You are not a member of a party.");
 				player.sendMessage(msg);
 				return;
 			}
-			party = plugin.getACParty(currentPartyId);
-			boolean stayInParty = true;			
 			
-			// check if there are people in the party who are not yellow
+			party = plugin.getACParty(currentPartyId);
+			boolean stayInParty = true;
+			
 			List<UUID> currentPartyMemberlist = null;
-			if (party != null) {
-				currentPartyMemberlist = party.getMembers();
-				List<UUID> yellowMemberlist = acPlayer.getYellowList();
-				if(currentPartyMemberlist.size() > 1) {
-					for(UUID member : currentPartyMemberlist) {
-						if(!yellowMemberlist.contains(member) && !member.equals(player)) {
-							stayInParty = false;
+			currentPartyMemberlist = party.getMembers();
+			List<UUID> yellowMemberlist = acPlayer.getYellowList();
+			if (currentPartyMemberlist.size() > 1) {
+				// check if all players in the party are on this player's yellow list (check 1)
+				for (UUID member : currentPartyMemberlist) {
+					if (!yellowMemberlist.contains(member) && !member.equals(player.getUniqueId())) {
+						stayInParty = false;
+						break;
+					}
+				}
+				
+				// make sure the player is on all the players yellow list's (check 2)
+				for (UUID member : currentPartyMemberlist) {
+					if (!member.equals(player.getUniqueId())) {
+						ACPlayer cPlayer = plugin.getACPlayer(member);
+						if (cPlayer != null) {
+							if (cPlayer.getYellowList() != null) {
+								if (!cPlayer.getYellowList().contains(player.getUniqueId())) {
+									stayInParty = false;
+									break;
+								}
+							} else {
+								stayInParty = false;
+								break;
+							}
 						}
 					}
 				}
 			}
 			
-			if(!stayInParty) {
+			if (!stayInParty) {
 				try {
 					// message everyone
 					for (UUID member : currentPartyMemberlist) {
@@ -261,7 +280,7 @@ public class YellowCommand implements CommandExecutor {
 							
 							if (!member.equals(uuid)) {
 								msg = Messages.message_leaveParty;
-								String name = Utils.formatName(plugin, player.getUniqueId(), cPlayer.getUniqueId());
+								String name = Utils.formatName(plugin, player.getUniqueId(), cPlayer.getUniqueId(), Color.YELLOW);
 								msg = msg.replace("{PLAYER}", name);
 								msg = msg.replace("{PLAYERS} {REASON}", Messages.reasonLeaveYellow);
 							} else {
