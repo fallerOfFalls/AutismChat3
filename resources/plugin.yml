@@ -55,9 +55,6 @@ commands:
   me:
     description: Displays a message about yourself.
     usage: /me <message>
-  default:
-    description: Set your default color
-    usage: /<command> <color>    
   status:
     description: Displays some of your current settings in the AutismChat3 plugin
     usage: /<command> [player]

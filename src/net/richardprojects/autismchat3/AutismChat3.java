@@ -20,7 +20,6 @@ import java.util.logging.Logger;
 
 import net.richardprojects.autismchat3.commands.AutismChatCommand;
 import net.richardprojects.autismchat3.commands.BlueCommand;
-import net.richardprojects.autismchat3.commands.DefaultCommand;
 import net.richardprojects.autismchat3.commands.GcCommand;
 import net.richardprojects.autismchat3.commands.AnnounceCommand;
 import net.richardprojects.autismchat3.commands.GreenCommand;
@@ -230,7 +229,6 @@ public class AutismChat3 extends JavaPlugin {
 		getCommand("join").setExecutor(new JoinCommand(this));
 		getCommand("autismchat").setExecutor(new AutismChatCommand(this));
 		getCommand("status").setExecutor(new StatusCommand(this));
-		getCommand("default").setExecutor(new DefaultCommand(this));
 		
 		// override vanilla private message commands
 		getCommand("w").setExecutor(new PrivateMessageCommands(this));

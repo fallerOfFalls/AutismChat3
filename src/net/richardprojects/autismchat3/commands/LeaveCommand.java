@@ -142,8 +142,7 @@ public class LeaveCommand implements CommandExecutor {
 							}
 						}
 					} else {
-						String msg = Utils.colorCodes(Messages.prefix_Bad + Messages.error_invalidArgs);
-						player.sendMessage(msg);
+						player.sendMessage(Utils.colorCodes(Messages.prefix_Bad + Messages.error_invalidArgs));
 						player.sendMessage("/leave");
 					}
 				}

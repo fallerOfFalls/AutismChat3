@@ -40,6 +40,24 @@ public class RedCommand implements CommandExecutor {
 			
 			if (args.length == 0) {
 				Utils.updateTeam(plugin, player.getUniqueId(), Color.RED); // update team
+				
+				ACPlayer acPlayer = plugin.getACPlayer(player.getUniqueId());
+				int cPartyId = acPlayer.getPartyId();
+				ACParty party = plugin.getACParty(cPartyId);
+				
+				// if they are alone update their default color and return
+				if (party.getMembers().size() == 1) {
+					acPlayer.setDefaultColor(Color.RED);
+					party.setColor(Color.RED);
+					
+					String msg = Messages.message_defaultCommand;
+					msg = msg.replace("{COLOR}", Messages.color_red + "Red&6");
+					msg = Utils.colorCodes(msg);
+					player.sendMessage(msg);
+					
+					return true;
+				}
+				
 				new SwitchRedTask(player.getUniqueId()).runTaskAsynchronously(plugin);	
 			} else {
 				String msg = Utils.colorCodes(Messages.prefix_Bad + Messages.error_invalidArgs);

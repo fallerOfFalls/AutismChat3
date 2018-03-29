@@ -43,6 +43,24 @@ public class YellowCommand implements CommandExecutor {
 			final ACPlayer acPlayer = plugin.getACPlayer(player.getUniqueId());
 			
 			if (args.length == 0) {
+				ACParty party = plugin.getACParty(acPlayer.getPartyId());
+				
+				// if they are alone update their default color and return
+				if (party != null && party.getMembers().size() == 1) {
+					// update colors
+					acPlayer.setDefaultColor(Color.YELLOW);
+					party.setColor(Color.YELLOW);
+					Utils.updateTeam(plugin, player.getUniqueId(), Color.YELLOW);
+					
+					// send message
+					String msg = Messages.message_defaultCommand;
+					msg = msg.replace("{COLOR}", Messages.color_yellow + "Yellow&6");
+					msg = Utils.colorCodes(msg);
+					player.sendMessage(msg);
+					
+					return true;
+				}
+				
 				new SwitchYellowTask(player.getUniqueId(), player).runTaskAsynchronously(plugin);
 				return true;
 			} else {

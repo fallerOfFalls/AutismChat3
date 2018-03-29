@@ -50,36 +50,32 @@ public class WhiteCommand implements CommandExecutor {
 				
 				acParty.setColor(Color.WHITE); // update party to white
 				
-				// notify all players on team and update their color on scoreboard
-				for (UUID cUUID : acParty.getMembers()) {
-					Player partyPlayer = plugin.getServer().getPlayer(cUUID);
+				if (acParty.getMembers().size() == 1) {
+					// update the player's default color					
+					acPlayer.setDefaultColor(Color.WHITE);
 					
-					if (partyPlayer != null) {
-						String msg = Messages.prefix_Good + Messages.message_setWhite;
-						msg = msg.replace("{PLAYER}", Utils.formatName(plugin, player.getUniqueId(), partyPlayer.getUniqueId()));
-						msg = Utils.colorCodes(msg);
-						partyPlayer.sendMessage(msg); // notify player
+					String msg = Messages.message_defaultCommand;
+					msg = msg.replace("{COLOR}", "&fWhite&6");
+					msg = Utils.colorCodes(msg);
+					player.sendMessage(msg);
+				} else {
+					// notify all players on team and update their color on scoreboard
+					for (UUID cUUID : acParty.getMembers()) {
+						Player partyPlayer = plugin.getServer().getPlayer(cUUID);
 						
-						Team playerTeam = AutismChat3.board.getPlayerTeam(partyPlayer);
-						if (playerTeam != null) {
-							String name = playerTeam.getName();
-							if (name.equals("greenTeam")) {
-								AutismChat3.greenTeam.removePlayer(partyPlayer);
-							} else if (name.equals("yellowTeam")) {
-								AutismChat3.yellowTeam.removePlayer(partyPlayer);
-							} else if (name.equals("redTeam")) {
-								AutismChat3.redTeam.removePlayer(partyPlayer);
-							} else if (name.equals("blueTeam")) {
-								AutismChat3.blueTeam.removePlayer(partyPlayer);
-							}
-						}
-						
-						for (Player cPlayer : plugin.getServer().getOnlinePlayers()) {
-							cPlayer.setScoreboard(AutismChat3.board);
-						}
-					}	
+						if (partyPlayer != null) {
+							String msg = Messages.prefix_Good + Messages.message_setWhite;
+							msg = msg.replace("{PLAYER}", Utils.formatName(plugin, player.getUniqueId(), partyPlayer.getUniqueId()));
+							msg = Utils.colorCodes(msg);
+							partyPlayer.sendMessage(msg); // notify player
+						}	
+					}
 				}
 
+				// update scoreboard
+				for (UUID uuid : acParty.getMembers()) {
+					Utils.updateTeam(plugin, uuid, Color.WHITE);
+				}
 			} else {
 				String msg = Utils.colorCodes(Messages.prefix_Bad + Messages.error_invalidArgs);
 				player.sendMessage(msg);
