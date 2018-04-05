@@ -109,7 +109,7 @@ public class LeaveCommand implements CommandExecutor {
 												plugin.getACParty(player.getPartyId()).setColor(player.getDefaultColor());
 												
 												msg = Messages.prefix_Good + Messages.message_setDefault; 
-												if (acPlayer.getDefaultColor() == Color.GREEN) {
+												if (player.getDefaultColor() == Color.GREEN) {
 													msg = msg.replace("{COLOR}", Messages.color_green + "Green&6");
 												} else if (player.getDefaultColor() == Color.WHITE) {
 													msg = msg.replace("{COLOR}", "&fWhite&6");
