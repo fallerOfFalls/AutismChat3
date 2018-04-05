@@ -392,24 +392,26 @@ public class AutismChat3 extends JavaPlugin {
 			oldColor = oldParty.getColor();
 			
 			// notify everyone in the party that the player left
-			for (UUID playerId : oldParty.getMembers()) {
-				Player cPlayer = getServer().getPlayer(playerId);
-				
-				if (cPlayer != null) {
-					String msg = "";
+			if (oldParty.getMembers().size() > 1) {
+				for (UUID playerId : oldParty.getMembers()) {
+					Player cPlayer = getServer().getPlayer(playerId);
 					
-					if (!playerId.equals(player)) {
-						msg = Messages.message_leaveParty;
-						String pName = Utils.formatName(this, player, cPlayer.getUniqueId());
-						msg = msg.replace("{PLAYER}", pName);
-						msg = msg.replace("{PLAYERS} {REASON}", Messages.reasonJoinedAnotherParty);
-					} else {
-						msg = Messages.message_youLeaveParty;
-						String partyMemberList = Utils.partyMembersString(this, currentPartyId, player);
-						msg = msg.replace("{PLAYERS} {REASON}", partyMemberList);
+					if (cPlayer != null) {
+						String msg = "";
+						
+						if (!playerId.equals(player)) {
+							msg = Messages.message_leaveParty;
+							String pName = Utils.formatName(this, player, cPlayer.getUniqueId());
+							msg = msg.replace("{PLAYER}", pName);
+							msg = msg.replace("{PLAYERS} {REASON}", Messages.reasonJoinedAnotherParty);
+						} else {
+							msg = Messages.message_youLeaveParty;
+							String partyMemberList = Utils.partyMembersString(this, currentPartyId, player);
+							msg = msg.replace("{PLAYERS} {REASON}", partyMemberList);
+						}
+						
+						cPlayer.sendMessage(Utils.colorCodes(msg));
 					}
-					
-					cPlayer.sendMessage(Utils.colorCodes(msg));
 				}
 			}	
 			
