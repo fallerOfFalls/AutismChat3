@@ -74,6 +74,8 @@ joinParty: '{PLAYER} &6has joined the party {MEMBERS}&6.'
 leaveParty: '{PLAYER} &6has left the party {PLAYERS} {REASON}&6.'
 youLeaveParty: '&6You have left the party {PLAYERS} {REASON}&6.'
 youJoinParty: '&6You have joined the party {MEMBERS}&6.'
+yourPartyScooped: '{SCOOPING_PLAYER} has scooped you into party {PARTY}. You are now {COLOR}.'
+otherPartyScooped: '{PLAYERS} {HAS|HAVE} been scooped into your party by {PLAYER}.'
 defaultCommand: '&6Your default color has been updated to {COLOR}&6.'
 reasons:
     red: '&6because they switched to &4Red'

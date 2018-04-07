@@ -24,16 +24,19 @@ public class Messages {
 	public static String color_yellow;
 	public static String color_blue;
 	public static String color_green;
+	
 	public static String status_colorSetting;
 	public static String status_yellowList;
 	public static String status_globalChat;
 	public static String status_partyMembers;
 	public static String status_othersYellowList;
 	public static String status_defaultColor;
+	
 	public static String prefix_Bad;
 	public static String prefix_Good;
 	public static String prefix_MessageReceiving;
 	public static String prefix_MessageSending;
+	
 	public static String error_noPermission;
 	public static String error_notValidPlayer;
 	public static String error_noAcceptingRed;
@@ -49,6 +52,7 @@ public class Messages {
 	public static String error_JoinParty6;
 	public static String error_yellowNoMatch;
 	public static String error_yellowDuplicate;
+	
 	public static String message_yellowAdd;
 	public static String message_yellowRemove;
 	public static String message_setYellow;
@@ -72,9 +76,16 @@ public class Messages {
 	public static String message_loadingSettings;
 	public static String message_joinMessage;
 	public static String message_joinMessageParty;
+	public static String message_yourPartyScooped;
+	public static String message_otherPartyScooped;
+	public static String message_youJoinParty;
+	public static String message_youLeaveParty;
+	public static String message_defaultCommand;
 	public static String message_reload;
+	
 	public static String partyChatFormat;
 	public static String globalChatFormat;
+	
 	public static String reasonLeaveRed;
 	public static String reasonLeaveYellow;
 	public static String reasonNotOnYellowList;
@@ -82,9 +93,7 @@ public class Messages {
 	public static String reasonYouYellow;
 	public static String reasonNotOnYourYellowList;
 	public static String reasonJoinedAnotherParty;
-	public static String message_youJoinParty;
-	public static String message_youLeaveParty;
-	public static String message_defaultCommand;
+	
 	public static List<String> motd = new ArrayList<String>();
 	public static List<String> help = new ArrayList<String>();
 	
@@ -119,8 +128,7 @@ public class Messages {
 			prefix_Good = messagesConfig.getString("prefixGood");
 			prefix_MessageSending = messagesConfig.getString("prefixMessageSending");
 			prefix_MessageReceiving = messagesConfig.getString("prefixMessageReceiving");
-			error_noPermission = messagesConfig.getString("errNoPerm");
-			error_notValidPlayer = messagesConfig.getString("notValidPlayer");
+
 			message_yellowAdd = messagesConfig.getString("yellowAdd");
 			message_yellowRemove = messagesConfig.getString("yellowRemove");
 			message_setYellow = messagesConfig.getString("statusSetYellow");
@@ -134,14 +142,6 @@ public class Messages {
 			message_globalChatOn = messagesConfig.getString("globalChatOn");
 			message_motdOn = messagesConfig.getString("motdOn");
 			message_motdOff = messagesConfig.getString("motdOff");
-			error_noAcceptingRed = messagesConfig.getString("noAcceptingRed");
-			error_noAcceptingYellow = messagesConfig.getString("noAcceptingYellow");
-			error_noSendingRed = messagesConfig.getString("noSendingRed");
-			error_noSendingYellow = messagesConfig.getString("noSendingYellow");
-			error_invalidArgs = messagesConfig.getString("invalidArgs");
-			error_noMessage = messagesConfig.getString("noMessageEntered");
-			error_yellowDuplicate = messagesConfig.getString("yellowDuplicate");
-			error_yellowNoMatch = messagesConfig.getString("yellowNoMatch");
 			message_yellowListAdd = messagesConfig.getString("yellowListAdd");
 			message_yellowListRemove = messagesConfig.getString("yellowListRemove");
 			message_nobodyHeardMessage = messagesConfig.getString("nobodyHeardMessage");
@@ -154,13 +154,24 @@ public class Messages {
 			message_defaultCommand = messagesConfig.getString("defaultCommand");
 			message_setColorInNewParty = messagesConfig.getString("statusSetColorInNewParty");
 			message_onlyOneInParty = messagesConfig.getString("leavingPartyWithOnlyOnePersonInIt");
+			message_yourPartyScooped = messagesConfig.getString("yourPartyScooped");
+			message_otherPartyScooped = messagesConfig.getString("otherPartyScooped");
 			
 			error_JoinParty1 = messagesConfig.getString("partyJoinErrorMessages.1");
 			error_JoinParty2 = messagesConfig.getString("partyJoinErrorMessages.2");
-			//error_JoinParty3 = messagesConfig.getString("partyJoinErrorMessages.3");
 			error_JoinParty4 = messagesConfig.getString("partyJoinErrorMessages.4");
 			error_JoinParty5 = messagesConfig.getString("partyJoinErrorMessages.5");
 			error_JoinParty6 = messagesConfig.getString("partyJoinErrorMessages.6");
+			error_noAcceptingRed = messagesConfig.getString("noAcceptingRed");
+			error_noAcceptingYellow = messagesConfig.getString("noAcceptingYellow");
+			error_noSendingRed = messagesConfig.getString("noSendingRed");
+			error_noSendingYellow = messagesConfig.getString("noSendingYellow");
+			error_invalidArgs = messagesConfig.getString("invalidArgs");
+			error_noMessage = messagesConfig.getString("noMessageEntered");
+			error_yellowDuplicate = messagesConfig.getString("yellowDuplicate");
+			error_yellowNoMatch = messagesConfig.getString("yellowNoMatch");
+			error_noPermission = messagesConfig.getString("errNoPerm");
+			error_notValidPlayer = messagesConfig.getString("notValidPlayer");
 			
 			// load chat formats
 			partyChatFormat = messagesConfig.getString("partyChatFormat");
