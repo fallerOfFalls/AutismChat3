@@ -40,7 +40,8 @@ private AutismChat3 plugin;
 				return false;
 			}
 		} else {
-			
+			String msg = Utils.colorCodes(Messages.prefix_Bad + Messages.error_mustBePlayer);
+			sender.sendMessage(msg);
 			return true;
 		}
 	}

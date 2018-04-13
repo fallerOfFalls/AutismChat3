@@ -27,6 +27,7 @@ import net.richardprojects.autismchat3.commands.LeaveCommand;
 import net.richardprojects.autismchat3.commands.MeCommand;
 import net.richardprojects.autismchat3.commands.PrivateMessageCommands;
 import net.richardprojects.autismchat3.commands.RedCommand;
+import net.richardprojects.autismchat3.commands.ScoopCommand;
 import net.richardprojects.autismchat3.commands.StatusCommand;
 import net.richardprojects.autismchat3.commands.WhiteCommand;
 import net.richardprojects.autismchat3.commands.YellowCommand;
@@ -228,6 +229,7 @@ public class AutismChat3 extends JavaPlugin {
 		getCommand("join").setExecutor(new JoinCommand(this));
 		getCommand("autismchat").setExecutor(new AutismChatCommand(this));
 		getCommand("status").setExecutor(new StatusCommand(this));
+		getCommand("scoop").setExecutor(new ScoopCommand(this));
 		
 		// override vanilla private message commands
 		getCommand("w").setExecutor(new PrivateMessageCommands(this));
@@ -461,19 +463,7 @@ public class AutismChat3 extends JavaPlugin {
 			// notify player
 			Color newColor = newParty.getColor();
 			String msg = Messages.prefix_Good + Messages.message_setColorInNewParty;
-			
-			if (newColor == Color.GREEN) {
-				msg = msg.replace("{COLOR}", Messages.color_green + "Green&6");
-			} else if (newColor == Color.WHITE) {
-				msg = msg.replace("{COLOR}", "&fWhite&6");
-			} else if (newColor == Color.YELLOW) {
-				msg = msg.replace("{COLOR}", Messages.color_yellow + "Yelloow&6");				
-			} else if (newColor == Color.RED) {
-				msg = msg.replace("{COLOR}", Messages.color_red + "Red&6");
-			} else if (newColor == Color.BLUE) {
-				msg = msg.replace("{COLOR}", Messages.color_blue + "Blue&6");
-			}
-			
+			msg = msg.replace("{COLOR}", Utils.formatColor(newColor));
 			msg = Utils.colorCodes(msg);
 			
 			if (getServer().getPlayer(player) != null) {
@@ -510,6 +500,64 @@ public class AutismChat3 extends JavaPlugin {
 				// update team colors
 				Utils.updateTeam(this, lastPlayer, lastACPlayer.getDefaultColor());
 			}
+		}
+		
+		return true;
+	}
+	
+	public boolean scoopParty(int targetPartyId, int playerPartyId, UUID scoopingPlayer) {
+		ACParty targetParty = getACParty(targetPartyId);
+		ACParty playerParty = getACParty(playerPartyId);
+		
+		// make sure both parties are not null
+		if (targetParty == null || playerParty == null) {
+			return false;
+		}
+		
+		List<UUID> originalPlayerPartyMembers = (List<UUID>) playerParty.getMembers().clone();
+		String originalPlayerParty = Utils.UUIDListToFormattedString(this, originalPlayerPartyMembers, false);
+		String scoopedPlayers = Utils.UUIDListToFormattedString(this, targetParty.getMembers(), false);
+		int scoopedPartySize = targetParty.getMembers().size();
+		
+		// loop through target party and add them to the player party
+		for (UUID cUUID : (List<UUID>) targetParty.getMembers().clone()) {
+			ACPlayer cPlayer = getACPlayer(cUUID);
+			
+			if (cPlayer != null) {
+				// update the current player's party
+				cPlayer.setPartyId(playerPartyId);
+				targetParty.removeMember(cUUID);
+				playerParty.addMember(cUUID);
+								
+				Utils.updateTeam(this, cUUID, playerParty.getColor()); // update scoreboard color
+				
+				// message the player that they have been scooped
+				String msg = Messages.message_yourPartyScooped;
+				msg = msg.replace("{SCOOPING_PLAYER}", Utils.formatName(this, scoopingPlayer));
+				msg = msg.replace("{PARTY}", originalPlayerParty);
+				msg = msg.replace("{COLOR}", Utils.formatColor(playerParty.getColor()));
+				Player player = getServer().getPlayer(cUUID);
+				if (player != null) {
+					player.sendMessage(Utils.colorCodes(msg));
+				}
+			}
+		}
+		
+		// message players in the player party that a new party has joined
+		for (UUID cUUID : originalPlayerPartyMembers) {
+			Player player = getServer().getPlayer(cUUID);
+			if (player != null) {
+				String msg = Messages.message_otherPartyScooped;
+				msg = msg.replace("{PLAYERS}", scoopedPlayers);
+				msg = msg.replace("{HAS|HAVE}", scoopedPartySize > 1 ? "have" : "has");
+				msg = msg.replace("{PLAYER}", Utils.formatName(this, scoopingPlayer, cUUID));
+				player.sendMessage(Utils.colorCodes(msg));
+			}
+		}
+		
+		// delete old party
+		if (targetParty.getMembers().size() == 0) {
+			deleteParty(targetPartyId);
 		}
 		
 		return true;

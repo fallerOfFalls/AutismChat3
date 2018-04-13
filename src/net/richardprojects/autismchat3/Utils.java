@@ -152,6 +152,18 @@ public class Utils {
 	 * 
 	 * @param plugin an instance of the AutismChat3 plugin
 	 * @param player the UUID of the player's name to be formatted
+	 * @return formatted name
+	 */
+	public static String formatName(AutismChat3 plugin, UUID player) {
+		return formatName(plugin, player, null);
+	}
+	
+	/**
+	 * This method generates a formatted name with the proper color of the
+	 * player who's UUID is provided.
+	 * 
+	 * @param plugin an instance of the AutismChat3 plugin
+	 * @param player the UUID of the player's name to be formatted
 	 * @param perspective the perspective of the player to see the formatted 
 	 * name (can be null)
 	 * @return formatted name
@@ -246,6 +258,10 @@ public class Utils {
 		return partyMemberString;
 	}
 	
+	public static String UUIDListToFormattedString(AutismChat3 plugin, List<UUID> list) {
+		return UUIDListToFormattedString(plugin, list, true);
+	}
+	
 	/**
 	 * Takes a list of UUIDs, intended to be the player's yellow list, and 
 	 * returns a String with formatted names
@@ -254,7 +270,7 @@ public class Utils {
 	 * @param list the list of UUIDs
 	 * @return the formatted String
 	 */
-	public static String UUIDListToFormattedString(AutismChat3 plugin, List<UUID> list) {
+	public static String UUIDListToFormattedString(AutismChat3 plugin, List<UUID> list, boolean showAtleastOne) {
 		String result = "";
 		
 		for (UUID member : list) {
@@ -270,10 +286,37 @@ public class Utils {
 			result = result.substring(2);
 			result += "&r";
 		} else {
-			result = "NONE";
+			if (!showAtleastOne) {
+				if (list.size() == 0) {
+					result = "NONE";
+				} else {
+					result = result.substring(2);
+					result += "&r";
+				}
+			} else {
+				result = "NONE";
+			}			
 		}
 		
 		return result;
+	}
+	
+	public static String formatColor(Color color) {
+		String value = "";
+		
+		if (color == Color.GREEN) {
+			value = Utils.colorCodes(Messages.color_green + "Green&6");
+		} else if (color == Color.WHITE) {
+			value = Utils.colorCodes("&fWhite&6");
+		} else if (color == Color.YELLOW) {
+			value = Utils.colorCodes(Messages.color_yellow + "Yellow&6");
+		} else if (color == Color.RED) {
+			value = Utils.colorCodes(Messages.color_red + "Red&6");
+		} else if (color == Color.BLUE) {
+			value = Utils.colorCodes(Messages.color_blue + "Blue&6");
+		}
+		
+		return value;
 	}
 	
 	/**

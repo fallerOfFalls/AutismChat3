@@ -58,3 +58,7 @@ commands:
   status:
     description: Displays some of your current settings in the AutismChat3 plugin
     usage: /<command> [player]
+  scoop:
+    description: The scooped party joins your party.
+    usage: /<command> <player>
+    aliases: [assimilate, pull, include]  

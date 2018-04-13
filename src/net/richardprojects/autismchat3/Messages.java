@@ -50,8 +50,14 @@ public class Messages {
 	public static String error_JoinParty4;
 	public static String error_JoinParty5;
 	public static String error_JoinParty6;
+	public static String error_ScoopParty1;
+	public static String error_ScoopParty2;
+	public static String error_ScoopParty3;
+	public static String error_ScoopParty4;
+	public static String error_ScoopParty5;
 	public static String error_yellowNoMatch;
 	public static String error_yellowDuplicate;
+	public static String error_mustBePlayer;
 	
 	public static String message_yellowAdd;
 	public static String message_yellowRemove;
@@ -162,6 +168,11 @@ public class Messages {
 			error_JoinParty4 = messagesConfig.getString("partyJoinErrorMessages.4");
 			error_JoinParty5 = messagesConfig.getString("partyJoinErrorMessages.5");
 			error_JoinParty6 = messagesConfig.getString("partyJoinErrorMessages.6");
+			error_ScoopParty1 = messagesConfig.getString("scoopErrorMessages.1");
+			error_ScoopParty2 = messagesConfig.getString("scoopErrorMessages.2");
+			error_ScoopParty3 = messagesConfig.getString("scoopErrorMessages.3");
+			error_ScoopParty4 = messagesConfig.getString("scoopErrorMessages.4");
+			error_ScoopParty5 = messagesConfig.getString("scoopErrorMessages.5");
 			error_noAcceptingRed = messagesConfig.getString("noAcceptingRed");
 			error_noAcceptingYellow = messagesConfig.getString("noAcceptingYellow");
 			error_noSendingRed = messagesConfig.getString("noSendingRed");
@@ -172,6 +183,7 @@ public class Messages {
 			error_yellowNoMatch = messagesConfig.getString("yellowNoMatch");
 			error_noPermission = messagesConfig.getString("errNoPerm");
 			error_notValidPlayer = messagesConfig.getString("notValidPlayer");
+			error_mustBePlayer = messagesConfig.getString("errMustBePlayer");
 			
 			// load chat formats
 			partyChatFormat = messagesConfig.getString("partyChatFormat");
