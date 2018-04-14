@@ -46,7 +46,7 @@ yellowRemove: '{TARGET}&6 removed from yellow list.'
 yellowNoMatch: '{TARGET}&c cannot be removed because they are not on your yellow list.'
 statusSetBlue: "{PLAYER}&6 switched your party to &9Blue&6. This lets other players know you are a staff member."
 statusSetYellow: '{PLAYER}&6 switched your party to &eYellow&6. Only {yellow_list} &6have permission to be in your party and message you.'
-statusSetRed: '{PLAYER}&6 switched your party to &4Red&6. Players can neither message you nor join your party, and vice versa.'
+statusSetRed: 'You switched to &4Red&6. Players can neither message you nor start a party with you.'
 statusSetWhite: '{PLAYER}&6 switched your party to &fWhite&6. Any player can message you or join your party.'
 statusSetGreen: '{PLAYER}&6 switched your party to &2Green&6. Players are encouraged to message or join your party.'
 statusSetDefault: 'You are now alone. Your party is now your default color of {COLOR}.'
@@ -62,27 +62,34 @@ noSendingRed: 'You cannot send messages because you are &4RED&c!'
 noSendingYellow: 'You cannot send {RECEIVER}&c messages because you are &6YELLOW&c and they are not on your list!'
 invalidArgs: 'Your command included invalid arguments. Usage:'
 noMessageEntered: 'You must enter a message to announce.'
-nobodyHeardMessage: 'There are no other online players in your party so nobody heard your message. To join another player in a party use /join <player>. If you do not like to be so forward, use /green and wait to be scooped.'
+nobodyHeardMessage: 'You are not in a party with any online players so nobody heard your message. To party with another player use /join <player>. If you do not like to be so forward, use /green and wait to be scooped.'
 gcAutoEnabled: 'Announcements have been automatically enabled so that you can see the response to your message.'
 partyJoinErrorMessages:
-    1: 'You cannot join {PLAYER}&c in a party because they are red.'
-    2: 'You cannot join the party {MEMBERS}&c because you are not on the yellow list of {NOT_ON_LIST}&c.'
+    1: 'You cannot party with {PLAYER}&c because they are red.'
+    2: 'You cannot party with {MEMBERS}&c because you are not on the yellow list of {NOT_ON_LIST}&c.'
 #   3: 'You cannot join a party while you are red.'
-    4: 'You cannot join the party {MEMBERS}&c because {NOT_ON_LIST}&c are not on your yellow list.'
+    4: 'You cannot party with {MEMBERS}&c because {NOT_ON_LIST}&c are not on your yellow list.'
     5: 'You cannot join {PLAYER}&c because you are already in a party with them.'
-    6: 'You cannot join yourself.'
+    6: 'You cannot party with yourself. But you can dance.'
 joinParty: '{PLAYER} &6has joined the party {MEMBERS}&6.'
+#joinPlayer: '{PLAYER} &6has started a party with you.~'
 leaveParty: '{PLAYER} &6has left the party {PLAYERS} {REASON}&6.'
+#leavePlayer: '{PLAYER} &6has abandoned you {REASON}&6.~'
 youLeaveParty: '&6You have left the party {PLAYERS} {REASON}&6.'
+#youLeavePlayer: '&6You have left {PLAYER} {REASON}&6.~'
 youJoinParty: '&6You have joined the party {MEMBERS}&6.'
-yourPartyScooped: '{SCOOPING_PLAYER} has scooped you into party {PARTY}. You are now {COLOR}.'
-otherPartyScooped: '{PLAYERS} {HAS|HAVE} been scooped into your party by {PLAYER}.'
+#youJoinPlayer: '&6You have started a party with {PLAYER}&6.~'
+yourPartyScooped: '{SCOOPING_PLAYER} &6has added you to the party: {PARTY}&6. You are now {COLOR}.'
+otherPartyScooped: '{PLAYERS}&6 {HAS|HAVE} been scooped into your party by {PLAYER}.'
 scoopErrorMessages:
     1: 'You cannot scoop a player who is already in your party.'
-    2: '&4A party must be &2Green&4 in order to be scooped.'
-    3: 'Your party is red. Red parties cannot scoop other parties.'
+    2: '&4A {player|party} must be &2Green&4 in order to be scooped.'
+    3: 'You are red. Red players cannot scoop. Consider joining instead.'
+	#number: 'You are red. Red players cannot scoop. Consider joining {PLAYER} instead.'
     4: 'Your party is yellow and some players in that party are not on the yellow list of some members of your party.'
+	#number: '{You|Your party} {are|is} yellow and {PLAYER|one or more players in that party} {is|are} not on {your yellow list|the yellow list of one or more members of your party}.'
     5: 'Your party is yellow and some players in that party do not have some players in your party on their yellow list.'
+    #number: '{You|Your party} {are|is} yellow and {PLAYER|some players in that party do not have AAAAAA I GIVE UP. some players in your party on their yellow list.'
 defaultCommand: '&6Your default color has been updated to {COLOR}&6.'
 reasons:
     red: '&6because they switched to &4Red'
@@ -92,7 +99,7 @@ reasons:
     notOnYellowList: '&6 because {Player}&6 is no longer on their yellow list'
     notOnYourYellowList: '&6 because {Player}&6 is no longer on your yellow list'
     joinedAnotherParty: '&6because they have joined another party'
-leavingPartyWithOnlyOnePersonInIt: 'You are not in a party with any other players, so there is nobody to leave.'
+leavingPartyWithOnlyOnePersonInIt: 'You are not in a party, so there is nobody to leave.'
 loadingSettingsMsg: '&6Your current AutismChat settings are...'
 status:
   colourSetting: '&6Colour status: {COLORSTATUS}'
@@ -105,7 +112,7 @@ reload: 'AutismChat configuration and messages reloaded.'
 #
 # Message of the day that is displayed to users when they first join
 motd:
-  - '&9This server is running AutismChat, an experimental plugin that changes how chat works. Please find the User Guide and feedback form at http://beeminecraftserver.weebly.com/autismchat.html'
+  - '&9This server is running AutismChat 4. Please find the User Guide at [insert link to User Guide I have not written yet]'
 #
 # Chat formats for both party and global
 partyChatFormat: "&6[Party] %name%  &7%message%"
@@ -122,14 +129,15 @@ joinMessageParty: '{PLAYER}&e has joined the game and is in your party.'
 # Help Menu
 help:
   - "&3&m================&9&l AutismChat &3&m================"
-  - "&7/white &f- Set your status to white"
-  - "&7/yellow &f- Set your status to yellow"
-  - "&7/yellow add <player> &f- Add a player to your yellow list"
-  - "&7/yellow remove &f- Remove a player from your yellow list"
-  - "&7/green &f- Set your status to green"
-  - "&7/red &f- Set your status to red"
+  - "&7/white &f- neutral"
+  - "&7/yellow &f- only approved players can join you"
+  - "&7/yellow add <player> &f- approve a player"
+  - "&7/yellow remove &f- unapprove a player"
+  - "&7/green &f- players can add you to their party"
+  - "&7/red &f- nobody can join you"
   - "&7/join <player> &f- Join that player's party"
   - "&7/leave &f- Leave your current party"
+  - "&7/scoop <player> &f- add a green player's party to your party"
   - "&7/announce &f- Sends a message to everyone with announcements enabled"
   - "&7/gc (<on|off>)&f- Toggle whether you can see announcements"
   - "&7/msg &8player &f- Send a private message"
