@@ -70,7 +70,7 @@ partyJoinErrorMessages:
 #   3: 'You cannot join a party while you are red.'
     4: 'You cannot party with {MEMBERS}&c because {NOT_ON_LIST}&c are not on your yellow list.'
     5: 'You cannot join {PLAYER}&c because you are already in a party with them.'
-    6: 'You cannot party with yourself. But you can dance.'
+    6: 'You cannot party with yourself.'
 joinParty: '{PLAYER} &6has joined the party {MEMBERS}&6.'
 #joinPlayer: '{PLAYER} &6has started a party with you.'
 leaveParty: '{PLAYER} &6has left the party {PLAYERS} {REASON}&6.'
