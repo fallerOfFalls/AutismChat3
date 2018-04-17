@@ -85,9 +85,9 @@ scoopErrorMessages:
     1: 'You cannot scoop a player who is already in your party.'
     2: '&4A {player|party} must be &2Green&4 in order to be scooped.'
     3: 'You are red. Red players cannot scoop. Consider joining instead.'
-	#number: 'You are red. Red players cannot scoop. Consider joining {PLAYER} instead.'
+    #number: 'You are red. Red players cannot scoop. Consider joining {PLAYER} instead.'
     4: 'Your party is yellow and some players in that party are not on the yellow list of some members of your party.'
-	#number: '{You|Your party} {are|is} yellow and {PLAYER|one or more players in that party} {is|are} not on {your yellow list|the yellow list of one or more members of your party}.'
+    #number: '{You|Your party} {are|is} yellow and {PLAYER|one or more players in that party} {is|are} not on {your yellow list|the yellow list of one or more members of your party}.'
     5: 'Your party is yellow and some players in that party do not have some players in your party on their yellow list.'
     #number: '{You|Your party} {are|is} yellow and {PLAYER|some players in that party do not have AAAAAA I GIVE UP. some players in your party on their yellow list.'
 defaultCommand: '&6Your default color has been updated to {COLOR}&6.'
@@ -124,7 +124,7 @@ prefixMessageReceiving: '&3[PLAYER&3->You] &7'
 #
 # Login Messages:
 joinMessage: '{PLAYER}&e has joined the game.'
-joinMessageParty: '{PLAYER}&e has joined the game and is in your party.'
+joinMessageParty: '{PLAYER}&e has joined the game and is in a party with you.'
 #
 # Help Menu
 help:
