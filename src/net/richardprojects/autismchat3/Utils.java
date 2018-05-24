@@ -165,17 +165,15 @@ public class Utils {
 	public static String formatName(AutismChat3 plugin, UUID player, UUID perspective) {
 		ACPlayer acPlayer = plugin.getACPlayer(player);
 		if (acPlayer == null) return "";
-		ACParty acParty = plugin.getACParty(acPlayer.getPartyId());
-		if (acParty == null) return "";
 		
 		if (perspective != null && player.equals(perspective)) {
 			// format player name from their perspective, so "You"
 			String name = "You";
-			name = Color.colorCode(acParty.getColor()) + name;
+			name = Color.colorCode(acPlayer.getCurrentColor(plugin)) + name;
 			return colorCodes(name + "&r");
 		} else {
 			String name = plugin.getName(player);
-			name = Color.colorCode(acParty.getColor()) + name;
+			name = Color.colorCode(acPlayer.getCurrentColor(plugin)) + name;
 			return colorCodes(name + "&r");
 		}
 	}
