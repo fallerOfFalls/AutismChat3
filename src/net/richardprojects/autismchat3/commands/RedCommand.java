@@ -91,15 +91,7 @@ public class RedCommand implements CommandExecutor {
 			ACParty party = plugin.getACParty(cPartyId);
 			boolean shouldReturnToDefault = false;
 			
-			if (party == null) {
-				// TODO: Write a method that can automatically recover from a 
-				// player not having a party by making a new one for them and 
-				// reporting it in the log
-				
-				return; // something really weird has happened
-			}
-			
-			if (party.getMembers().size() > 1) {
+			if (party != null && party.getMembers().size() > 1) {
 				shouldReturnToDefault = true;
 				try {
 					// message everyone
@@ -125,36 +117,39 @@ public class RedCommand implements CommandExecutor {
 						}
 					}
 					
-					party.removeMember(player); // remove player from old party
-					
-					// create a new party for the player
-					int newPartyId = plugin.createNewParty(player, Color.RED);					
-					acPlayer.setPartyId(newPartyId);
+					// remove player from old party
+					party.removeMember(player); 
+					acPlayer.setPartyId(-1);
 				} catch(Exception e) {
 					e.printStackTrace();
 				}
 			}
 			
-			if (party.getMembers().size() == 1) {
+			if (party != null && party.getMembers().size() == 1) {
 				if (shouldReturnToDefault) {
 					// if previous party now only has one member set their color back to their default
 					UUID lastPlayer = party.getMembers().get(0);
 					if (lastPlayer != null && plugin.getACPlayer(lastPlayer) != null) {
 						ACPlayer player = plugin.getACPlayer(lastPlayer);
 						party.setColor(player.getDefaultColor());
-						String msg = "";
 						
-						msg = Messages.prefix_Good + Messages.message_setDefault; 
-						if (player.getDefaultColor() == Color.GREEN) {
-							msg = msg.replace("{COLOR}", Messages.color_green + "Green&6");
-						} else if (player.getDefaultColor() == Color.WHITE) {
-							msg = msg.replace("{COLOR}", "&fWhite&6");
-						} else if (player.getDefaultColor() == Color.YELLOW) {
-							msg = msg.replace("{COLOR}", Messages.color_yellow + "Yellow&6");
-						} else if (player.getDefaultColor() == Color.RED) {
-							msg = msg.replace("{COLOR}", Messages.color_red + "Red&6");
-						} else if (player.getDefaultColor() == Color.BLUE) {
-							msg = msg.replace("{COLOR}", Messages.color_blue + "Blue&6");
+						String msg = Messages.prefix_Good + Messages.message_setDefault; 
+						switch (player.getDefaultColor()) {
+							case GREEN:
+								msg = msg.replace("{COLOR}", Messages.color_green + "Green&6");
+								break;
+							case WHITE:
+								msg = msg.replace("{COLOR}", "&fWhite&6");
+								break;
+							case YELLOW:
+								msg = msg.replace("{COLOR}", Messages.color_yellow + "Yellow&6");
+								break;
+							case RED:
+								msg = msg.replace("{COLOR}", Messages.color_red + "Red&6");
+								break;
+							case BLUE:
+								msg = msg.replace("{COLOR}", Messages.color_blue + "Blue&6");
+								break;
 						}
 						msg = Utils.colorCodes(msg);
 						

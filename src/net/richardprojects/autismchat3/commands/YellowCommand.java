@@ -38,197 +38,205 @@ public class YellowCommand implements CommandExecutor {
 	}
 
 	public boolean onCommand(CommandSender sender, Command arg1, String arg2, String[] args) {
-		if (sender instanceof Player) {
-			final Player player = (Player) sender;
-			final ACPlayer acPlayer = plugin.getACPlayer(player.getUniqueId());
-			
-			if (args.length == 0) {
-				ACParty party = plugin.getACParty(acPlayer.getPartyId());
-				
-				// if they are alone update their default color and return
-				if (party != null && party.getMembers().size() == 1) {
-					// update colors
-					acPlayer.setDefaultColor(Color.YELLOW);
-					party.setColor(Color.YELLOW);
-					Utils.updateTeam(plugin, player.getUniqueId(), Color.YELLOW);
-					
-					// send message
-					String msg = Messages.message_defaultCommand;
-					msg = msg.replace("{COLOR}", Messages.color_yellow + "Yellow&6");
-					msg = Utils.colorCodes(msg);
-					player.sendMessage(msg);
-					
-					return true;
-				}
-				
-				new SwitchYellowTask(player.getUniqueId(), player).runTaskAsynchronously(plugin);
-				return true;
-			} else {
-				if (args.length == 1) {
-					if (args[0].equalsIgnoreCase("list")) {
-						// send yellow statuses
-						String[] statuses = Config.yellowStatuses.split(",");
-						for (String status : statuses) {
-							Utils.sendStatus(status, player.getUniqueId(), plugin);
-						}
-						
-						return true;
-					} else {
-						sender.sendMessage(Utils.colorCodes(Messages.prefix_Bad + Messages.error_invalidArgs));
-						return false;
-					}
-				} else if (args.length == 2) {
-					if (args[0].equalsIgnoreCase("add")) {
-						String playerName = args[1];
-						if (!playerName.equalsIgnoreCase(player.getName())) {
-							UUID newUUID = plugin.getUUID(playerName);
-							
-							List<UUID> yellowListMembers = acPlayer.getYellowList();	
-							if(newUUID != null) {
-								playerName = Utils.formatName(plugin, newUUID, player.getUniqueId());
-								
-								boolean addPersonToList = true;
-								for(UUID member : yellowListMembers) {
-									if(member.equals(newUUID)) {
-										addPersonToList = false;
-									}
-								}
-								
-								if (addPersonToList) {
-									String notification = Messages.prefix_Good + Messages.message_yellowAdd;
-									notification = notification.replace("{TARGET}", playerName);
-									acPlayer.addPlayerToYellowList(newUUID);
-									player.sendMessage(Utils.colorCodes(notification));
-									return true;
-								} else {
-									String notification = Messages.prefix_Bad + Messages.error_yellowDuplicate;
-									notification = notification.replace("{TARGET}", playerName);
-									player.sendMessage(Utils.colorCodes(notification));
-									return true;
-								}
-							} else {
-								String notification = Messages.prefix_Bad + Messages.error_notValidPlayer;
-								notification = notification.replace("{TARGET}", playerName);
-								player.sendMessage(Utils.colorCodes(notification));
-								return true;
-							}
-						} else {
-							String notification = Messages.prefix_Bad + "You cannot add yourself to your own yellow list.";
-							player.sendMessage(Utils.colorCodes(notification));
-						}
-						return true;
-					} else if (args[0].equalsIgnoreCase("remove")) {
-						String playerName = args[1];
-						if (!playerName.equalsIgnoreCase(player.getName())) {
-							UUID newUUID = plugin.getUUID(playerName);
-
-							List<UUID> yellowListMembers = acPlayer.getYellowList();							
-							if (newUUID != null) {
-								playerName = Utils.formatName(plugin, newUUID, player.getUniqueId());
-								boolean removePersonFromList = false;
-								for(UUID member : yellowListMembers) {
-									if(member.equals(newUUID)) {
-										removePersonFromList = true;
-									}
-								}
-								
-								if (removePersonFromList) {
-									String notification = Messages.prefix_Good + Messages.message_yellowRemove;
-									notification = notification.replace("{TARGET}", playerName);
-									acPlayer.removePlayerFromYellowList(newUUID);
-									player.sendMessage(Utils.colorCodes(notification));
-									
-									// check if the player is set to yellow and they are currently in a party with the person they just removed
-									if (plugin.getACParty(acPlayer.getPartyId()).getColor() == Color.YELLOW) {
-										int partyId = acPlayer.getPartyId();
-										ACParty party = plugin.getACParty(partyId);
-																				
-										if (party != null) {
-											List<UUID> partyMembers = party.getMembers();
-											if (partyMembers.contains(newUUID)) {
-												try {
-													 // remove player from old party
-													party.removeMember(player.getUniqueId());
-													
-													// create a new party and update the player's party id
-													int newPartyId = plugin.createNewParty(player.getUniqueId(), Color.YELLOW);
-													plugin.getACPlayer(player.getUniqueId()).setPartyId(newPartyId);
-													
-													// notify old party members that they have left the party
-													for(UUID uuid2 : partyMembers) {
-														if(!uuid2.equals(player.getUniqueId())) {
-															Player cPlayer = plugin.getServer().getPlayer(uuid2);
-															if(cPlayer != null) {
-																// leave party message
-																String msg = Messages.message_leaveParty;
-																String name = Utils.formatName(plugin, player.getUniqueId(), cPlayer.getUniqueId());
-																msg = msg.replace("{PLAYER}", name);
-																String reason = Messages.reasonNotOnYellowList;
-																String name2 = Utils.formatName(plugin, newUUID, cPlayer.getUniqueId());
-																reason = reason.replace("{Player}", name2);
-																msg = msg.replace(" {PLAYERS} {REASON}", ChatColor.RESET + reason);
-																cPlayer.sendMessage(Utils.colorCodes(msg));
-															}
-														}
-													}
-													
-													// send Message to player who just left
-													String partyMemberlist = "";
-													for(UUID playerUUID : partyMembers) {
-														if(!playerUUID.equals(player.getUniqueId())) {
-															String name = Utils.formatName(plugin, playerUUID, player.getUniqueId());
-															partyMemberlist += ", " + name;
-														}
-													}
-													partyMemberlist = partyMemberlist.substring(2);
-													
-													String msg = Messages.message_youLeaveParty;
-													msg = msg.replace("has", "have");
-													msg = msg.replace("{PLAYERS}", partyMemberlist);
-													String reason = Messages.reasonNotOnYourYellowList;
-													String name = Utils.formatName(plugin, newUUID, player.getUniqueId());
-													reason = reason.replace("{Player}", name);
-													msg = msg.replace("{REASON}", ChatColor.RESET + reason);
-													player.sendMessage(Utils.colorCodes(msg));
-													
-												} catch(Exception e) {
-													e.printStackTrace();
-												}												
-											}
-										}
-									}
-									
-									return true;
-								} else {
-									String notification = Messages.prefix_Bad + Messages.error_yellowNoMatch;
-									notification = notification.replace("{TARGET}", playerName);
-									player.sendMessage(Utils.colorCodes(notification));
-									return true;
-								}
-							} else {
-								String notification = Messages.prefix_Bad + Messages.error_notValidPlayer;
-								notification = notification.replace("{TARGET}", playerName);
-								player.sendMessage(Utils.colorCodes(notification));
-								return true;
-							}
-						} else {
-							String notification = Messages.prefix_Bad + "You cannot remove yourself from your own yellow list.";
-							player.sendMessage(Utils.colorCodes(notification));
-							return true;
-						}
-					} else {
-						sender.sendMessage(Utils.colorCodes(Messages.prefix_Bad + Messages.error_invalidArgs));
-						return false;
-					}
-				} else {
-					sender.sendMessage(Utils.colorCodes(Messages.prefix_Bad + Messages.error_invalidArgs));
-					return false;
-				}
-			}
-		} else {
+		if (!(sender instanceof Player)) {
 			sender.sendMessage("Only players can use this command.");
 			return true;
 		}
+			
+		final Player player = (Player) sender;
+		final ACPlayer acPlayer = plugin.getACPlayer(player.getUniqueId());
+		
+		if (args.length == 0) {
+			ACParty party = plugin.getACParty(acPlayer.getPartyId());
+			
+			// if they are alone update their default color and return
+			if (party != null && party.getMembers().size() == 1) {
+				// update colors
+				acPlayer.setDefaultColor(Color.YELLOW);
+				party.setColor(Color.YELLOW);
+				Utils.updateTeam(plugin, player.getUniqueId(), Color.YELLOW);
+				
+				// send message
+				String msg = Messages.message_defaultCommand;
+				msg = msg.replace("{COLOR}", Messages.color_yellow + "Yellow&6");
+				msg = Utils.colorCodes(msg);
+				player.sendMessage(msg);
+				
+				return true;
+			}
+			
+			new SwitchYellowTask(player.getUniqueId(), player).runTaskAsynchronously(plugin);
+			return true;
+		}
+		
+		if (args.length == 1) {
+			if (args[0].equalsIgnoreCase("list")) {
+				// send yellow statuses
+				String[] statuses = Config.yellowStatuses.split(",");
+				for (String status : statuses) {
+					Utils.sendStatus(status, player.getUniqueId(), plugin);
+				}
+				
+				return true;
+			} else {
+				sender.sendMessage(Utils.colorCodes(Messages.prefix_Bad + Messages.error_invalidArgs));
+				return false;
+			}
+		}
+		
+		if (args.length == 2) {
+			
+			// add command
+			if (args[0].equalsIgnoreCase("add")) {
+				String playerName = args[1];
+				UUID newUUID = plugin.getUUID(playerName);
+				List<UUID> yellowListMembers = acPlayer.getYellowList();
+				
+				// prevent them from adding themselves to their own yellow list
+				if (playerName.equalsIgnoreCase(player.getName())) {
+					String notification = Messages.prefix_Bad + "You cannot add yourself to your own yellow list.";
+					player.sendMessage(Utils.colorCodes(notification));
+				}
+				
+				// check that the name they entered is valid
+				if(newUUID == null) {
+					String notification = Messages.prefix_Bad + Messages.error_notValidPlayer;
+					notification = notification.replace("{TARGET}", playerName);
+					player.sendMessage(Utils.colorCodes(notification));
+					return true;
+				}	
+				
+				playerName = Utils.formatName(plugin, newUUID, player.getUniqueId());
+				
+				// make sure the person isn't already on their yellow list
+				if (yellowListMembers.contains(newUUID)) {
+					String notification = Messages.prefix_Bad + Messages.error_yellowDuplicate;
+					notification = notification.replace("{TARGET}", playerName);
+					player.sendMessage(Utils.colorCodes(notification));
+					return true;
+				}
+				
+				// actually add the person to their yellow list
+				String notification = Messages.prefix_Good + Messages.message_yellowAdd;
+				notification = notification.replace("{TARGET}", playerName);
+				acPlayer.addPlayerToYellowList(newUUID);
+				player.sendMessage(Utils.colorCodes(notification));
+				return true;
+			}
+			
+			// remove command
+			if (args[0].equalsIgnoreCase("remove")) {
+				String playerName = args[1];
+				UUID newUUID = plugin.getUUID(playerName);
+				List<UUID> yellowListMembers = acPlayer.getYellowList();
+				
+				// prevent a player from removing themself from their yellow list
+				if (playerName.equalsIgnoreCase(player.getName())) {
+					 String notification = Messages.prefix_Bad + "You cannot remove yourself from your own yellow list.";
+					 player.sendMessage(Utils.colorCodes(notification));
+					 return true;
+				}
+				
+				// make sure the player name entered is valid
+				if (newUUID == null) {
+					String notification = Messages.prefix_Bad + Messages.error_notValidPlayer;
+					notification = notification.replace("{TARGET}", playerName);
+					player.sendMessage(Utils.colorCodes(notification));
+					return true;
+				}
+
+				// check if the player is on their list
+				playerName = Utils.formatName(plugin, newUUID, player.getUniqueId());
+				boolean removePersonFromList = false;
+				for(UUID member : yellowListMembers) {
+					if(member.equals(newUUID)) {
+						removePersonFromList = true;
+					}
+				}
+				
+				// if the entered player is not currently on their yellow list inform them there is no match and quit
+				if (!removePersonFromList) {
+					String notification = Messages.prefix_Bad + Messages.error_yellowNoMatch;
+					notification = notification.replace("{TARGET}", playerName);
+					player.sendMessage(Utils.colorCodes(notification));
+					return true;
+				}
+				
+				// actually remove the player from the list
+				String notification = Messages.prefix_Good + Messages.message_yellowRemove;
+				notification = notification.replace("{TARGET}", playerName);
+				acPlayer.removePlayerFromYellowList(newUUID);
+				player.sendMessage(Utils.colorCodes(notification));
+				
+				// check if the player is set to yellow and they are currently in a party with the person they just removed
+				ACParty acParty = plugin.getACParty(acPlayer.getPartyId());
+				if (acParty != null && acParty.getColor() == Color.YELLOW) {
+					int partyId = acPlayer.getPartyId();
+					ACParty party = plugin.getACParty(partyId);
+															
+					if (party != null) {
+						List<UUID> partyMembers = party.getMembers();
+						if (partyMembers.contains(newUUID)) {
+							try {
+								// remove player from old party
+								party.removeMember(player.getUniqueId());
+								acPlayer.setPartyId(-1);
+								
+								// notify old party members that they have left the party
+								for(UUID uuid2 : partyMembers) {
+									if(!uuid2.equals(player.getUniqueId())) {
+										Player cPlayer = plugin.getServer().getPlayer(uuid2);
+										if(cPlayer != null) {
+											// leave party message
+											String msg = Messages.message_leaveParty;
+											String name = Utils.formatName(plugin, player.getUniqueId(), cPlayer.getUniqueId());
+											msg = msg.replace("{PLAYER}", name);
+											String reason = Messages.reasonNotOnYellowList;
+											String name2 = Utils.formatName(plugin, newUUID, cPlayer.getUniqueId());
+											reason = reason.replace("{Player}", name2);
+											msg = msg.replace(" {PLAYERS} {REASON}", ChatColor.RESET + reason);
+											cPlayer.sendMessage(Utils.colorCodes(msg));
+										}
+									}
+								}
+								
+								// send message to player who just left
+								String partyMemberlist = "";
+								for(UUID playerUUID : partyMembers) {
+									if(!playerUUID.equals(player.getUniqueId())) {
+										String name = Utils.formatName(plugin, playerUUID, player.getUniqueId());
+										partyMemberlist += ", " + name;
+									}
+								}
+								partyMemberlist = partyMemberlist.substring(2);
+								
+								String msg = Messages.message_youLeaveParty;
+								msg = msg.replace("has", "have");
+								msg = msg.replace("{PLAYERS}", partyMemberlist);
+								String reason = Messages.reasonNotOnYourYellowList;
+								String name = Utils.formatName(plugin, newUUID, player.getUniqueId());
+								reason = reason.replace("{Player}", name);
+								msg = msg.replace("{REASON}", ChatColor.RESET + reason);
+								player.sendMessage(Utils.colorCodes(msg));
+								
+							} catch(Exception e) {
+								e.printStackTrace();
+							}												
+						}
+					}
+				}
+				
+				return true;
+			}
+			
+			// invalid arguments
+			sender.sendMessage(Utils.colorCodes(Messages.prefix_Bad + Messages.error_invalidArgs));
+			return false;
+		}
+		
+		// invalid arguments
+		sender.sendMessage(Utils.colorCodes(Messages.prefix_Bad + Messages.error_invalidArgs));
+		return false;
 	}
 	
 	private class SwitchYellowTask extends BukkitRunnable {
@@ -313,41 +321,30 @@ public class YellowCommand implements CommandExecutor {
 						}	
 					}
 					
-					party.removeMember(uuid); // remove player from old party
+					// remove player from old party
+					party.removeMember(uuid); 
+					plugin.getACPlayer(uuid).setPartyId(-1);
+					plugin.getACPlayer(uuid).setDefaultColor(Color.YELLOW);
+					Utils.updateTeam(plugin, player.getUniqueId(), Color.YELLOW);
 					
-					// create a new party for the player
-					int newPartyId = plugin.createNewParty(uuid, Color.YELLOW);
-					plugin.getACPlayer(uuid).setPartyId(newPartyId);
-					
-					Utils.updateTeam(plugin, player.getUniqueId(), Color.YELLOW); // update the player teams
-					
-					// if previous party now only has one member set their color back to their default
+					// if previous party now only has one member remove them as well
 					if (party.getMembers().size() == 1) {
-						UUID lastPlayer = party.getMembers().get(0);
-						if (lastPlayer != null && plugin.getACPlayer(lastPlayer) != null) {
-							ACPlayer player = plugin.getACPlayer(lastPlayer);
-							party.setColor(player.getDefaultColor());
+						UUID lastPlayerUUID = party.getMembers().get(0);
+											
+						if (lastPlayerUUID != null && plugin.getACPlayer(lastPlayerUUID) != null) {
+							ACPlayer lastPlayer = plugin.getACPlayer(lastPlayerUUID);
+							party.removeMember(lastPlayerUUID);
 							
 							String msg = Messages.prefix_Good + Messages.message_setDefault; 
-							if (acPlayer.getDefaultColor() == Color.GREEN) {
-								msg = msg.replace("{COLOR}", Messages.color_green + "Green&6");
-							} else if (player.getDefaultColor() == Color.WHITE) {
-								msg = msg.replace("{COLOR}", "&fWhite&6");
-							} else if (player.getDefaultColor() == Color.YELLOW) {
-								msg = msg.replace("{COLOR}", Messages.color_yellow + "Yellow&6");
-							} else if (player.getDefaultColor() == Color.RED) {
-								msg = msg.replace("{COLOR}", Messages.color_red + "Red&6");
-							} else if (player.getDefaultColor() == Color.BLUE) {
-								msg = msg.replace("{COLOR}", Messages.color_blue + "Blue&6");
-							}
+							msg = msg.replace("{COLOR}", Utils.formatColor(acPlayer.getDefaultColor()));
 							msg = Utils.colorCodes(msg);
 								
-							if (plugin.getServer().getPlayer(lastPlayer) != null) {
-								plugin.getServer().getPlayer(lastPlayer).sendMessage(msg);
+							if (plugin.getServer().getPlayer(lastPlayerUUID) != null) {
+								plugin.getServer().getPlayer(lastPlayerUUID).sendMessage(msg);
 							}
 							
 							// update team colors
-							Utils.updateTeam(plugin, lastPlayer, player.getDefaultColor());
+							Utils.updateTeam(plugin, lastPlayerUUID, lastPlayer.getDefaultColor());
 						}
 					}
 				} catch(Exception e) {

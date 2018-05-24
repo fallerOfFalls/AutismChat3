@@ -53,6 +53,25 @@ public class ACPlayer {
 	}
 	
 	/**
+	 * Constructor for an ACPlayer that creates a completely new player. Use
+	 * this constructor if you are creating a new player and not loading an
+	 * existing one.
+	 * 
+	 * @param uuid the UUID of the player
+	 * @param partyId the party they are in
+	 */
+	public ACPlayer(UUID uuid) {
+		this.uuid = uuid;
+		this.partyId = -1;		
+		this.defaultColor = Config.templateDefaultColor;
+		this.globalChat = Config.templateGlobalChat;
+		this.displayMotd = Config.templateMotd;
+		this.yellowList = new ArrayList<UUID>();
+		
+		this.needsUpdate = true;
+	}
+	
+	/**
 	 * Constructor for an ACPlayer that is being loaded. In this constructor 
 	 * you must provide all variables.
 	 */
@@ -75,6 +94,25 @@ public class ACPlayer {
 		this.needsUpdate = true;
 	}
 
+	/**
+	 * Players do not have their own color, rather their color is based on the 
+	 * party they are in. If they are not in a party their default color is
+	 * returned. 
+	 * 
+	 * This method is here for convenience and makes code easier to follow.
+	 * 
+	 * @return the current color of player either based on their party or 
+	 * default
+	 */
+	public Color getCurrentColor(AutismChat3 plugin) {
+		ACParty party = partyId > -1 ? plugin.getACParty(partyId) : null;
+		if (party != null) {
+			return party.getColor();
+		} else {
+			return getDefaultColor();
+		}
+	}
+	
 	public Color getDefaultColor() {
 		return defaultColor;
 	}
@@ -121,6 +159,10 @@ public class ACPlayer {
 			this.yellowList.remove(uuid);
 		}		
 		this.needsUpdate = true;
+	}
+	
+	public UUID getUUID() {
+		return uuid;
 	}
 	
 	/**

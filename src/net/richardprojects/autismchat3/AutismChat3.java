@@ -92,6 +92,7 @@ public class AutismChat3 extends JavaPlugin {
 		greenTeam = board.registerNewTeam("greenTeam");
 		greenTeam.setPrefix(Utils.colorCodes(Messages.color_green));
 		
+		// load data from disk
 		loadPlayerData();
 		loadPartyData();
 		
@@ -328,13 +329,40 @@ public class AutismChat3 extends JavaPlugin {
 	}
 	
 	/**
+	 * Instantiates a new ACParty based on the ACPlayer and their default color
+	 *  and adds it to the parties HashMap.
+	 * 
+	 * @param firstMember ACPlayer of the first member
+	 */
+	public int createNewParty(ACPlayer firstMember) {
+		return createNewParty(firstMember, null);
+	}
+	
+	/**
 	 * Instantiates a new ACParty and adds it to the parties HashMap.
 	 * 
-	 * @param firstMember the party's first member's uuid
-	 * @return the new party's id
+	 * @param firstMember ACPlayer of the first member
+	 * @param color can be used to override the player's default color - 
+	 * uses player's default Color if color is null
 	 */
-	public int createNewParty(UUID firstMember, Color color) {
-		ACParty acParty = new ACParty(firstMember, color, this);
+	public int createNewParty(ACPlayer firstMember, Color color) {
+		color = color == null ? firstMember.getDefaultColor() : color;
+		
+		// if color is still null just use global defaults
+		if (color == null) color = Config.templateDefaultColor;
+		
+		List<UUID> members = new ArrayList<>();
+		members.add(firstMember.getUUID());
+		
+		// determine the highest party id
+		int highestId = 0;
+		for (int partyId : partyIDs()) {
+			if (partyId > highestId) {
+				highestId = partyId;
+			}
+		}
+		
+		ACParty acParty = new ACParty(members, highestId + 1, color);
 		parties.put(acParty.getId(), acParty);
 		return acParty.getId();
 	}
@@ -478,27 +506,32 @@ public class AutismChat3 extends JavaPlugin {
 			UUID lastPlayer = oldParty.getMembers().get(0);
 			if (lastPlayer != null && getACPlayer(lastPlayer) != null) {
 				ACPlayer lastACPlayer = getACPlayer(lastPlayer);
-				oldParty.setColor(lastACPlayer.getDefaultColor());
+				oldParty.setColor(lastACPlayer.getCurrentColor(this));
 				String msg = "";
 				
-				if (lastACPlayer.getDefaultColor() == Color.GREEN) {
-					msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setGreen);
-				} else if (lastACPlayer.getDefaultColor() == Color.WHITE) {
-					msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setWhite);
-				} else if (lastACPlayer.getDefaultColor() == Color.YELLOW) {
-					msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setYellow);
-				} else if (lastACPlayer.getDefaultColor() == Color.RED) {
-					msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setRed);
-				} else if (lastACPlayer.getDefaultColor() == Color.BLUE) {
-					msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setBlue);
+				switch (lastACPlayer.getCurrentColor(this)) {
+					case GREEN:
+						msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setGreen);
+						break;
+					case WHITE:
+						msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setWhite);
+						break;
+					case YELLOW:
+						msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setYellow);
+						break;
+					case RED:
+						msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setRed);
+						break;
+					case BLUE:
+						msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setBlue);
+						break;
 				}
 					
 				if (getServer().getPlayer(lastPlayer) != null) {
 					getServer().getPlayer(lastPlayer).sendMessage(msg);
 				}
 				
-				// update team colors
-				Utils.updateTeam(this, lastPlayer, lastACPlayer.getDefaultColor());
+				Utils.updateTeam(this, lastPlayer, lastACPlayer.getCurrentColor(this)); // update team colors
 			}
 		}
 		

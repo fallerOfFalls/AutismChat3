@@ -53,14 +53,8 @@ public class Utils {
 			}
 			receiver.sendMessage(Utils.colorCodes(msg));
 		} else if (status.equals("colourSetting")) {
-			Color playersColor = null;
-			
-			if (uuidPlayer.getPartyId() > 0 && plugin.getACParty(uuidPlayer.getPartyId()) != null) {
-				playersColor = plugin.getACParty(uuidPlayer.getPartyId()).getColor();
-			} else {
-				playersColor = uuidPlayer.getDefaultColor();
-			}
-			
+			Color playersColor = uuidPlayer.getCurrentColor(plugin);
+						
 			String msg = Messages.status_colorSetting;
 			msg = msg.replace("{COLORSTATUS}", Color.colorCode(playersColor) + Color.toString(playersColor));
 			receiver.sendMessage(Utils.colorCodes(msg));

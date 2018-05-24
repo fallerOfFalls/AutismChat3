@@ -42,33 +42,35 @@ public class LoginEvent implements Listener {
 		UUID uuid = player.getUniqueId();
 		
 		// update the UUID's file every time a player joins
-		plugin.updateUUID(player.getName(), player.getUniqueId());
-
-		boolean playerJoinedBefore = true;
+		plugin.updateUUID(player.getName(), player.getUniqueId());;
 
 		// handle new user creation
 		if (plugin.getACPlayer(player.getUniqueId()) == null) {
-			playerJoinedBefore = false;
-			
-			// create new party
-			int partyID = plugin.createNewParty(uuid, Config.templateDefaultColor);				
-			if (partyID > -1) plugin.createNewPlayer(uuid, partyID);
+			plugin.createNewPlayer(uuid, -1);
 		}
 
 		ACPlayer acPlayer = plugin.getACPlayer(uuid);
-		ACParty acParty = plugin.getACParty(acPlayer.getPartyId());
-		if (acParty == null) return;
 		
-		Color pColor = acParty.getColor();
-		if (pColor == Color.RED) {
-			AutismChat3.redTeam.addPlayer(player);
-		} else if (pColor == Color.BLUE) {
-			AutismChat3.blueTeam.addPlayer(player);
-		} else if (pColor == Color.GREEN) {
-			AutismChat3.greenTeam.addPlayer(player);
-		} else if (pColor == Color.YELLOW) {
-			AutismChat3.yellowTeam.addPlayer(player);
+		// add new player to team based on their color
+		switch (acPlayer.getCurrentColor(plugin)) {
+			case RED:
+				AutismChat3.redTeam.addPlayer(player);
+				break;
+			case BLUE:
+				AutismChat3.blueTeam.addPlayer(player);
+				break;
+			case GREEN:
+				AutismChat3.greenTeam.addPlayer(player);
+				break;
+			case YELLOW:
+				AutismChat3.yellowTeam.addPlayer(player);
+				break;
+			case WHITE:
+				break;
+			default:
+				break;
 		}
+		
 		player.setScoreboard(AutismChat3.board);
 
 		// show message of the day
@@ -79,30 +81,21 @@ public class LoginEvent implements Listener {
 			}
 		}
 
-		// Show loginreport
+		// show the login report
 		if (Config.loginReport) {
-			// Loading Settings transition message
 			String msg = Utils.colorCodes(Messages.message_loadingSettings);
 			player.sendMessage(msg);
 
-			// Send Statuses for login report
+			// send statuses for login report
 			String[] loginReport = Config.loginReportStatuses.split(",");
 			for (int i = 0; i < loginReport.length; i++) {
 				Utils.sendStatus(loginReport[i], player.getUniqueId(), plugin);
 			}
 		}
 		
-		
-		for(Player cPlayer : plugin.getServer().getOnlinePlayers()) {
-			boolean displayMessage = true;
-			
-			if(Config.redHidesLoginNotification) {
-				if(pColor == Color.RED) {
-					displayMessage = false;
-				}
-			}
-			
-			if (displayMessage) {
+		// only show the login message to everyone if they are not red
+		if (!(Config.redHidesLoginNotification && acPlayer.getCurrentColor(plugin) == Color.RED)) {
+			for(Player cPlayer : plugin.getServer().getOnlinePlayers()) {
 				if (cPlayer.getUniqueId().equals(e.getPlayer().getUniqueId())) {
 					String msg = Messages.message_joinMessage;
 					String name = Utils.formatName(plugin, player.getUniqueId(), null);
@@ -112,7 +105,7 @@ public class LoginEvent implements Listener {
 					int cPlayerPartyId = plugin.getACPlayer(cPlayer.getUniqueId()).getPartyId();
 					String name = Utils.formatName(plugin, player.getUniqueId(), cPlayer.getUniqueId());
 					ACParty cPlayerParty = plugin.getACParty(cPlayerPartyId);
-					
+						
 					if (cPlayerParty != null) {
 						List<UUID> partyMembers = cPlayerParty.getMembers();
 						if (partyMembers.contains(e.getPlayer().getUniqueId())) {
@@ -121,7 +114,7 @@ public class LoginEvent implements Listener {
 							cPlayer.sendMessage(Utils.colorCodes(msg));
 						} else {
 							String msg = Messages.message_joinMessage;
-							msg = msg.replace("{PLAYER}", name);
+						msg = msg.replace("{PLAYER}", name);
 							cPlayer.sendMessage(Utils.colorCodes(msg));
 						}
 					} else {

@@ -33,30 +33,6 @@ public class ACParty {
 	public boolean needsUpdate;
 	
 	/**
-	 * A constructor used for creating a new party for the first time.
-	 * 
-	 * @param firstMember the party's first member's uuid
-	 * @param plugin a reference to the AutismChat3 plugin
-	 */
-	public ACParty(UUID firstMember, Color color, AutismChat3 plugin) {
-		this.color = color;
-		
-		members = new ArrayList<>();
-		members.add(firstMember);
-		
-		// determine the highest party id
-		int highestId = 0;
-		for (int partyId : plugin.partyIDs()) {
-			if (partyId > highestId) {
-				highestId = partyId;
-			}
-		}
-		
-		id = highestId + 1;
-		needsUpdate = true;
-	}
-	
-	/**
 	 * A constructor used when party data is simply being loaded from an 
 	 * existing file.
 	 * 
@@ -107,6 +83,12 @@ public class ACParty {
 	 * @return whether the operation was successful or not
 	 */
 	public boolean save(AutismChat3 plugin) {
+		// automatically delete party if it is empty
+		if (members.size() == 0) {
+			plugin.deleteParty(id);
+			return true;
+		}
+		
 		try {
 			// load or create new file
 			FileConfiguration partyFile = new YamlConfiguration();
