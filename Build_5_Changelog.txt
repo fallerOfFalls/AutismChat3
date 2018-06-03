@@ -1,0 +1,15 @@
+* Cleaned up code in places to make simpler
+* Rewrote system to support players not always being in a party
+* If you leave your party because you become red you will no longer be put in another party and will simply be alone
+* If you leave your party because your party was yellow and you remove a member of the party from your yellow list you will not be put in another party and will simply be alone.
+* Added youJoinPlayer message
+* Added joinPlayer message
+
+Needs testing:
+* Allow players to join other players who aren't in a party
+* Added a new statusSetColorInNewPlayer message
+
+TODO:
+* Update status messages to have two different messages for party status; one in a party and one not in a party.
+* remove the last player from their party when the second member of the party joins another one
+* Update the leave party command

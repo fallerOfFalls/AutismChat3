@@ -141,6 +141,24 @@ public class Utils {
 	}
 	
 	/**
+	 * A simple utility used to send a chat message to a player by their UUID.
+	 * 
+	 * @param plugin an instance of the AutismChat3 plugin
+	 * @param uuid UUID of the player to send the message to
+	 * @param msg message to send to the player
+	 * @return whether or not the message was sent successfully
+	 */
+	public static boolean sendMessage(AutismChat3 plugin, UUID uuid, String msg) {
+		Player player = plugin.getServer().getPlayer(uuid);
+		if (player == null) {
+			return false;
+		} else {
+			player.sendMessage(Utils.colorCodes(msg));
+			return true;
+		}
+	}
+	
+	/**
 	 * This method generates a formatted name with the proper color of the
 	 * player who's UUID is provided.
 	 * 

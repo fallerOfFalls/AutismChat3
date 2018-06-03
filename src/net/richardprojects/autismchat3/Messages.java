@@ -68,6 +68,7 @@ public class Messages {
 	public static String message_setBlue;
 	public static String message_setDefault;
 	public static String message_setColorInNewParty;
+	public static String message_setColorInNewPlayer;
 	public static String message_globalChatOff;
 	public static String message_globalChatOn;
 	public static String message_motdOn;
@@ -81,6 +82,8 @@ public class Messages {
 	public static String message_onlyOneInParty;
 	public static String message_loadingSettings;
 	public static String message_joinMessage;
+	public static String message_joinPlayer;
+	public static String message_youJoinPlayer;
 	public static String message_joinMessageParty;
 	public static String message_yourPartyScooped;
 	public static String message_otherPartyScooped;
@@ -153,12 +156,15 @@ public class Messages {
 			message_nobodyHeardMessage = messagesConfig.getString("nobodyHeardMessage");
 			message_gcAutoEnabled = messagesConfig.getString("gcAutoEnabled");
 			message_joinParty = messagesConfig.getString("joinParty");
+			message_joinPlayer = messagesConfig.getString("joinPlayer");
 			message_leaveParty = messagesConfig.getString("leaveParty");
 			message_youLeaveParty = messagesConfig.getString("youLeaveParty");
 			message_youJoinParty = messagesConfig.getString("youJoinParty");
+			message_youJoinPlayer = messagesConfig.getString("youJoinPlayer");
 			message_loadingSettings = messagesConfig.getString("loadingSettingsMsg");
 			message_defaultCommand = messagesConfig.getString("defaultCommand");
 			message_setColorInNewParty = messagesConfig.getString("statusSetColorInNewParty");
+			message_setColorInNewPlayer = messagesConfig.getString("statusSetColorInNewPlayer");
 			message_onlyOneInParty = messagesConfig.getString("leavingPartyWithOnlyOnePersonInIt");
 			message_yourPartyScooped = messagesConfig.getString("yourPartyScooped");
 			message_otherPartyScooped = messagesConfig.getString("otherPartyScooped");

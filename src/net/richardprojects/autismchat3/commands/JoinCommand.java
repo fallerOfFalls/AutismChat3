@@ -25,60 +25,59 @@ private AutismChat3 plugin;
 	
 	public boolean onCommand(CommandSender sender, Command arg1, String arg2,
 			final String[] args) {
-		if(sender instanceof Player) {
-			final Player player = (Player) sender;
-			if(args.length == 1) {
-				plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-					public void run() {
-						JoinCommand.this.run(player, args);
-					}
-				});
-				return true;
-			} else {
-				String msg = Messages.prefix_Bad + Messages.error_invalidArgs;
-				player.sendMessage(Utils.colorCodes(msg));
-				return false;
-			}
-		} else {
+		
+		// make sure sender is a player
+		if(!(sender instanceof Player)) {
 			String msg = Utils.colorCodes(Messages.prefix_Bad + Messages.error_mustBePlayer);
 			sender.sendMessage(msg);
 			return true;
 		}
+		
+		// make sure there is only 1 argument
+		if(args.length != 1) {
+			String msg = Messages.prefix_Bad + Messages.error_invalidArgs;
+			sender.sendMessage(Utils.colorCodes(msg));
+			return false;
+		}
+		
+		// run the join command with the player and arguments
+		final Player player = (Player) sender;
+		plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+			public void run() {
+				JoinCommand.this.run(player, args);
+			}
+		});
+		return true;
 	}
 	
 	private void run(Player player, String[] args) {
-		UUID newUUID = plugin.getUUID(args[0]);
+		UUID targetUUID = plugin.getUUID(args[0]);
 		ACPlayer acPlayer = plugin.getACPlayer(player.getUniqueId());
-		ACPlayer acTarget = plugin.getACPlayer(newUUID);
-		int partyId = acTarget.getPartyId();
-		ACParty requestedParty;
+		ACPlayer acTarget = plugin.getACPlayer(targetUUID);
+		ACParty targetParty = null;
 		
 		// make sure the player's name exists
-		if (newUUID == null) {
+		if (targetUUID == null) {
 			String msg = Messages.prefix_Bad + Messages.error_notValidPlayer;
 			msg = msg.replace("{TARGET}", args[0]);
 			player.sendMessage(Utils.colorCodes(msg));
 			return;
 		}
 		
-		// make sure they are in a party
-		if(partyId == 0 || plugin.getACParty(partyId) == null) {
-			String msg = Messages.prefix_Bad + "&7That player doesn't appear to be in a party.";
-			player.sendMessage(Utils.colorCodes(msg));
-			return;
-		}
-		requestedParty = plugin.getACParty(partyId);
-		
 		// check 6 - prevent player from partying with them self
-		if(newUUID.equals(player.getUniqueId())) {
+		if(targetUUID.equals(player.getUniqueId())) {
 			String msg = Messages.prefix_Bad + Messages.error_JoinParty6;
 			player.sendMessage(Utils.colorCodes(msg));
 			return;
 		}
 		
+		if(acTarget.getPartyId() != -1 && acTarget.getPartyId() != 0) {
+			targetParty = plugin.getACParty(acTarget.getPartyId());
+		}
+		
 		// check 5 - prevent a player from partying with a player they are already in a party with
-		if (acPlayer.getPartyId() == requestedParty.getId()) {
-			String pName = Utils.formatName(plugin, newUUID, player.getUniqueId());
+		if (targetParty != null && acPlayer.getPartyId() == targetParty.getId()) {
+			String pName = Utils.formatName(plugin, targetUUID, player.getUniqueId());
 			String msg = Messages.prefix_Bad + Messages.error_JoinParty5;
 			msg = msg.replace("{PLAYER}", pName);
 			player.sendMessage(Utils.colorCodes(msg));
@@ -86,29 +85,41 @@ private AutismChat3 plugin;
 		}
 		
 		// check 1 - prevent a player from joining a party that is red
-		if(requestedParty.getColor() == Color.RED) {
+		if(acTarget.getCurrentColor(plugin) == Color.RED) {
 			String msg = Messages.prefix_Bad + Messages.error_JoinParty1;
-			String pName = Utils.formatName(plugin, newUUID, player.getUniqueId());
+			String pName = Utils.formatName(plugin, targetUUID, player.getUniqueId());
 			msg = msg.replace("{PLAYER}", pName);
 			player.sendMessage(Utils.colorCodes(msg));
 			return;
 		}
 		
 		// check 2 - if party is yellow make player is on party members' yellow lists.
-		if (requestedParty.getColor() == Color.YELLOW) {
-			String partyMemberString = Utils.partyMembersString(plugin, partyId, player.getUniqueId());
+		if (acTarget.getCurrentColor(plugin) == Color.YELLOW) {
 			List<UUID> playersNotOnYellowList = new ArrayList<>();
 			
-			for (UUID cUUID : requestedParty.getMembers()) {
-				ACPlayer acUUID = plugin.getACPlayer(cUUID);
-				if (acUUID != null) {
-					if (!acUUID.getYellowList().contains(player.getUniqueId())) {
-						playersNotOnYellowList.add(cUUID);
+			if (targetParty == null) {
+				if (!acTarget.getYellowList().contains(player.getUniqueId())) {
+					playersNotOnYellowList.add(targetUUID);
+				}
+			} else {
+				for (UUID cUUID : targetParty.getMembers()) {
+					ACPlayer acUUID = plugin.getACPlayer(cUUID);
+					if (acUUID != null) {
+						if (!acUUID.getYellowList().contains(player.getUniqueId())) {
+							playersNotOnYellowList.add(cUUID);
+						}
 					}
 				}
 			}
 			
 			if (playersNotOnYellowList.size() > 0) {
+				String partyMemberString = "";
+				if (targetParty == null) {
+					partyMemberString = Utils.formatName(plugin, targetUUID);
+				} else {
+					partyMemberString = Utils.partyMembersString(plugin, targetParty.getId(), player.getUniqueId());
+				}
+				
 				String msg = Messages.prefix_Bad + Messages.error_JoinParty2;
 				msg = msg.replace("{MEMBERS}", partyMemberString);
 				msg = msg.replace("{NOT_ON_LIST}", Utils.playersString(plugin, playersNotOnYellowList, player.getUniqueId()));
@@ -118,18 +129,30 @@ private AutismChat3 plugin;
 		}
 		
 		// check 4 - if party is yellow make players are on the player who is joining's yellow list.
-		if(requestedParty.getColor() == Color.YELLOW) {
-			String partyMemberString = Utils.partyMembersString(plugin, partyId, player.getUniqueId());
+		if(acTarget.getCurrentColor(plugin) == Color.YELLOW) {
 			List<UUID> playersNotOnYellowList = new ArrayList<>();
 			
 			// find any players in party who are not on player's yellow list
-			for (UUID cUUID : requestedParty.getMembers()) {
-				if (!acPlayer.getYellowList().contains(cUUID)) {
-					playersNotOnYellowList.add(cUUID);
+			if (targetParty == null) {
+				if (!acPlayer.getYellowList().contains(targetUUID)) {
+					playersNotOnYellowList.add(targetUUID);
 				}
-			}
+			} else {
+				for (UUID cUUID : targetParty.getMembers()) {
+					if (!acPlayer.getYellowList().contains(cUUID)) {
+						playersNotOnYellowList.add(cUUID);
+					}
+				}
+			}	
 			
 			if (playersNotOnYellowList.size() > 0) {
+				String partyMemberString = "";
+				if (targetParty == null) {
+					partyMemberString = Utils.formatName(plugin, targetUUID);
+				} else {
+					partyMemberString = Utils.partyMembersString(plugin, targetParty.getId(), player.getUniqueId());
+				}
+				
 				String msg = Messages.prefix_Bad + Messages.error_JoinParty4;
 				msg = msg.replace("{MEMBERS}", partyMemberString);
 				msg = msg.replace("{NOT_ON_LIST}", Utils.playersString(plugin, playersNotOnYellowList, player.getUniqueId()));
@@ -138,6 +161,11 @@ private AutismChat3 plugin;
 			}
 		}
 		
-		plugin.joinParty(partyId, player.getUniqueId()); // join new party
+		// join new party
+		if (targetParty == null) {
+			plugin.joinPlayer(targetUUID, player.getUniqueId());
+		} else {
+			plugin.joinParty(targetParty.getId(), player.getUniqueId());
+		}
 	}
 }

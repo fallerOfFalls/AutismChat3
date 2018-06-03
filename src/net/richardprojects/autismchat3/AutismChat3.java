@@ -403,6 +403,133 @@ public class AutismChat3 extends JavaPlugin {
 	}
 	
 	/**
+	 * Handles adding a player to a target in a party if the target is not already in a party.
+	 * 
+	 * @param partyId id of the party to join
+	 * @param player player's UUID
+	 * @return
+	 */
+	public boolean joinPlayer(UUID target, UUID player) {
+		ACPlayer acPlayer = getACPlayer(player);
+		ACPlayer acTarget = getACPlayer(target);
+		
+		if (acPlayer == null || acTarget == null) return false;
+		
+		// have player leave their current party (if applicable)
+		int currentPartyId = acPlayer.getPartyId();
+		ACParty oldParty = getACParty(currentPartyId);
+		if (oldParty != null) {
+			Color oldColor = null;
+			oldColor = oldParty.getColor();
+			
+			// notify everyone in the party that the player left
+			if (oldParty.getMembers().size() > 1) {
+				for (UUID playerId : oldParty.getMembers()) {
+					Player cPlayer = getServer().getPlayer(playerId);
+					
+					if (cPlayer != null) {
+						String msg = "";
+						
+						if (!playerId.equals(player)) {
+							msg = Messages.message_leaveParty;
+							String pName = Utils.formatName(this, player, cPlayer.getUniqueId());
+							msg = msg.replace("{PLAYER}", pName);
+							msg = msg.replace("{PLAYERS} {REASON}", Messages.reasonJoinedAnotherParty);
+						} else {
+							msg = Messages.message_youLeaveParty;
+							String partyMemberList = Utils.partyMembersString(this, currentPartyId, player);
+							msg = msg.replace("{PLAYERS} {REASON}", partyMemberList);
+						}
+						
+						cPlayer.sendMessage(Utils.colorCodes(msg));
+					}
+				}
+			}	
+			
+			// remove the player and delete the party
+			oldParty.removeMember(player);			
+			if (oldParty.getMembers().isEmpty()) {
+				// delete party because it is empty
+				deleteParty(currentPartyId);
+			}
+		}
+		
+		// add member to the specified party
+		int newPartyId = createNewParty(acTarget);
+		ACParty newParty = getACParty(newPartyId);
+		if (newParty != null) {
+			// put the players in the party
+			newParty.addMember(player);
+			acPlayer.setPartyId(newPartyId);
+			acTarget.setPartyId(newPartyId);
+
+			// send join message to target
+			String msg = Messages.message_joinPlayer;
+			msg = msg.replace("{PLAYER}", Utils.formatName(this, player, target));
+			Utils.sendMessage(this, target, msg);
+			
+			// send join message to new member
+			msg = Messages.message_youJoinPlayer;
+			msg = msg.replace("{PLAYER}", Utils.formatName(this, target, player));
+			Utils.sendMessage(this, player, msg);
+		} else {
+			return false;
+		}	
+		
+		// update the player's color to the party color
+		if (newParty.getColor() != acPlayer.getDefaultColor()) {
+			// notify player
+			Color newColor = newParty.getColor();
+			String msg = Messages.prefix_Good + Messages.message_setColorInNewPlayer;
+			msg = msg.replace("{COLOR}", Utils.formatColor(newColor));
+			msg = Utils.colorCodes(msg);
+			
+			if (getServer().getPlayer(player) != null) {
+				getServer().getPlayer(player).sendMessage(msg);
+			}
+			
+			Utils.updateTeam(this, player, newColor); // update teams			
+		}
+		
+		// if previous party now only has one member set their color back to their default
+		// TODO: remove the last player from their party
+		if (oldParty != null && oldParty.getMembers().size() == 1) {
+			UUID lastPlayer = oldParty.getMembers().get(0);
+			if (lastPlayer != null && getACPlayer(lastPlayer) != null) {
+				ACPlayer lastACPlayer = getACPlayer(lastPlayer);
+				oldParty.setColor(lastACPlayer.getCurrentColor(this));
+				String msg = "";
+				
+				switch (lastACPlayer.getCurrentColor(this)) {
+					case GREEN:
+						msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setGreen);
+						break;
+					case WHITE:
+						msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setWhite);
+						break;
+					case YELLOW:
+						msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setYellow);
+						break;
+					case RED:
+						msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setRed);
+						break;
+					case BLUE:
+						msg = Utils.colorCodes(Messages.prefix_Good + Messages.message_setBlue);
+						break;
+				}
+					
+				if (getServer().getPlayer(lastPlayer) != null) {
+					getServer().getPlayer(lastPlayer).sendMessage(msg);
+				}
+				
+				Utils.updateTeam(this, lastPlayer, lastACPlayer.getCurrentColor(this)); // update team colors
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
 	 * Adds a player to an existing party's member list and sets their party 
 	 * id to match the specified party.
 	 * 
@@ -502,7 +629,7 @@ public class AutismChat3 extends JavaPlugin {
 		}
 		
 		// if previous party now only has one member set their color back to their default
-		if (oldParty.getMembers().size() == 1) {
+		if (oldParty != null && oldParty.getMembers().size() == 1) {
 			UUID lastPlayer = oldParty.getMembers().get(0);
 			if (lastPlayer != null && getACPlayer(lastPlayer) != null) {
 				ACPlayer lastACPlayer = getACPlayer(lastPlayer);

@@ -51,6 +51,7 @@ statusSetWhite: '{PLAYER}&6 switched your party to &fWhite&6. Any player can mes
 statusSetGreen: '{PLAYER}&6 switched your party to &2Green&6. Players are encouraged to message or join your party.'
 statusSetDefault: 'You are now alone. Your party is now your default color of {COLOR}.'
 statusSetColorInNewParty: 'You joined a party that is {COLOR}, your color has been changed to match.'
+statusSetColorInNewPlayer: 'You joined a player that is {COLOR}, your color has been changed to match.'
 notValidPlayer: "Can't find {TARGET}! Either you mispelled their name, or they haven't logged in since AutismChat was installed."
 globalChatOff: 'Announcements will not be displayed.'
 globalChatOn: 'Anouncements will be displayed.'
@@ -72,13 +73,13 @@ partyJoinErrorMessages:
     5: 'You cannot join {PLAYER}&c because you are already in a party with them.'
     6: 'You cannot party with yourself.'
 joinParty: '{PLAYER} &6has joined the party {MEMBERS}&6.'
-#joinPlayer: '{PLAYER} &6has started a party with you.'
+joinPlayer: '{PLAYER} &6has started a party with you.'
 leaveParty: '{PLAYER} &6has left the party {PLAYERS} {REASON}&6.'
 #leavePlayer: '{PLAYER} &6has left you to die of loneliness {REASON}&6. Consider joining another party, or use /green to signal for rescue.'
 youLeaveParty: '&6You have left the party {PLAYERS} {REASON}&6.'
 #youLeavePlayer: '&6You have left {PLAYER} {REASON}&6.'
 youJoinParty: '&6You have joined the party {MEMBERS}&6.'
-#youJoinPlayer: '&6You have started a party with {PLAYER}&6.'
+youJoinPlayer: '&6You have started a party with {PLAYER}&6.'
 yourPartyScooped: '{SCOOPING_PLAYER} &6has added you to the party: {PARTY}&6. You are now {COLOR}.'
 otherPartyScooped: '{PLAYERS}&6 {HAS|HAVE} been scooped into your party by {PLAYER}.'
 scoopErrorMessages:
